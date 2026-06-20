@@ -22,6 +22,10 @@ const buildMissionExperienceFormData = (payload: MissionExperiencePayload) => {
   formData.append("long_description", payload.long_description);
   formData.append("investment", String(payload.investment));
 
+  if (payload.file_url) {
+    formData.append("file", payload.file_url);
+  }
+
   payload.images?.slice(0, 4).forEach((image, index) => {
     if (image) {
       formData.append(`images[${index}]`, image);
@@ -112,10 +116,11 @@ export const missionExperienceService = {
     missionUuid: string,
     expeuuid: string,
     imageUuid: string
-      ) => {
-        const res = await api.delete(
-          `/admin/missions/${missionUuid}/experiences/${expeuuid}/images/${imageUuid}`
-        );
+  ) => {
+    const res = await api.delete(
+      `/admin/missions/${missionUuid}/experiences/${expeuuid}/images/${imageUuid}`
+    );
+
     return res.data;
   },
 };

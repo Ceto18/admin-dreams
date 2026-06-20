@@ -39,6 +39,7 @@ export type MissionExperience = {
   subtitle: string;
   long_description: string;
   investment: string | number;
+  file?: string | null;
   images?: MissionExperienceImage[];
   features?: MissionExperienceFeature[];
   itineraries?: MissionExperienceItinerary[];
@@ -58,6 +59,7 @@ export type MissionExperiencePayload = {
   subtitle: string;
   long_description: string;
   investment: string | number;
+  file_url?: File | null;
   images?: File[];
   features?: string[];
   itineraries?: MissionExperiencePayloadItinerary[];

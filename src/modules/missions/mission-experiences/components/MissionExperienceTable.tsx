@@ -26,7 +26,7 @@ export default function MissionExperienceTable({
   onView,
   onEdit,
   onDelete,
-  showView = true,
+  showView = false,
   showEdit = true,
   showDelete = true,
 }: Props) {
@@ -106,7 +106,7 @@ export default function MissionExperienceTable({
       loading={loading}
       emptyMessage="No hay experiencias registradas."
       getRowKey={(experience) => experience.uuid}
-      onView={onView}
+      //onView={onView}
       onEdit={onEdit}
       onDelete={onDelete}
       showView={showView}
