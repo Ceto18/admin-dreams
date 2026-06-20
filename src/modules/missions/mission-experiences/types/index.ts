@@ -18,6 +18,13 @@ export type MissionExperienceItinerary = {
   order: number;
 };
 
+export type MissionExperiencePayloadItinerary = {
+  day: string | number;
+  order: string | number;
+  title: string;
+  description: string;
+};
+
 export type MissionExperience = {
   uuid: string;
   name: string;
@@ -52,4 +59,12 @@ export type MissionExperiencePayload = {
   long_description: string;
   investment: string | number;
   images?: File[];
+  features?: string[];
+  itineraries?: MissionExperiencePayloadItinerary[];
+};
+
+export type DeleteMissionExperienceImageParams = {
+  missionUuid: string;
+  expeuuid: string;
+  imageUuid: string;
 };

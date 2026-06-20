@@ -9,13 +9,9 @@ import TablePagination from "@/shared/components/table/TablePagination";
 import ConfirmModal from "@/shared/components/ui/modal/ConfirmModal";
 
 import MissionExperienceTable from "@/modules/missions/mission-experiences/components/MissionExperienceTable";
-import MissionExperienceForm from "@/modules/missions/mission-experiences/components/form/MissionExperienceForm";
 
 import { useMissionExperienceStore } from "@/modules/missions/mission-experiences/store/useMissionExperienceStore";
-import {
-  MissionExperience,
-  MissionExperiencePayload,
-} from "@/modules/missions/mission-experiences/types";
+import { MissionExperience } from "@/modules/missions/mission-experiences/types";
 
 function TableAntLoading() {
   return (
@@ -44,15 +40,10 @@ export default function MissionExperiencesPage() {
     totalPages,
     perPage,
     fetchMissionExperiences,
-    createMissionExperience,
-    updateMissionExperience,
     deleteMissionExperience,
   } = useMissionExperienceStore();
 
   const [search, setSearch] = useState("");
-  const [showForm, setShowForm] = useState(false);
-  const [selectedExperience, setSelectedExperience] =
-    useState<MissionExperience | null>(null);
   const [experienceToDelete, setExperienceToDelete] =
     useState<MissionExperience | null>(null);
 
@@ -98,51 +89,18 @@ export default function MissionExperiencesPage() {
     });
   };
 
+  const handleCreate = () => {
+    router.push(`/missions/${missionUuid}/experiences/create`);
+  };
+
   const handleView = (experience: MissionExperience) => {
     router.push(`/missions/${missionUuid}/experiences/${experience.uuid}`);
   };
 
-  const handleOpenCreate = () => {
-    setSelectedExperience(null);
-    setShowForm(true);
-  };
-
-  const handleOpenEdit = (experience: MissionExperience) => {
-    setSelectedExperience(experience);
-    setShowForm(true);
-  };
-
-  const handleCloseForm = () => {
-    if (loading) return;
-
-    setSelectedExperience(null);
-    setShowForm(false);
-  };
-
-  const handleSubmit = async (payload: MissionExperiencePayload) => {
-    try {
-      if (selectedExperience) {
-        await updateMissionExperience(
-          missionUuid,
-          selectedExperience.uuid,
-          payload
-        );
-      } else {
-        await createMissionExperience(missionUuid, payload);
-      }
-
-      await fetchMissionExperiences({
-        missionUuid,
-        page: currentPage,
-        perPage,
-        search,
-      });
-
-      setSelectedExperience(null);
-      setShowForm(false);
-    } catch {
-      // El error ya se maneja en el store.
-    }
+  const handleEdit = (experience: MissionExperience) => {
+    router.push(
+      `/missions/${missionUuid}/experiences/${experience.uuid}/edit`
+    );
   };
 
   const handleDelete = (experience: MissionExperience) => {
@@ -180,7 +138,7 @@ export default function MissionExperiencesPage() {
         title="Experiencias"
         description="Administra las experiencias registradas para esta misión."
         addLabel="Nueva experiencia"
-        onAdd={handleOpenCreate}
+        onAdd={handleCreate}
         searchValue={search}
         searchPlaceholder="Buscar experiencia..."
         onSearchChange={handleSearchChange}
@@ -202,7 +160,7 @@ export default function MissionExperiencesPage() {
           data={experiences}
           loading={false}
           onView={handleView}
-          onEdit={handleOpenEdit}
+          onEdit={handleEdit}
           onDelete={handleDelete}
           showView
           showEdit
@@ -218,43 +176,6 @@ export default function MissionExperiencesPage() {
         onPageChange={handlePageChange}
         onPerPageChange={handlePerPageChange}
       />
-
-      {showForm && (
-        <div className="fixed inset-0 z-99999 flex items-center justify-center bg-gray-900/60 p-4">
-          <div className="max-h-[90vh] w-full max-w-5xl overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-900">
-            <div className="mb-6 flex items-start justify-between gap-4">
-              <div>
-                <h2 className="text-xl font-semibold text-gray-800 dark:text-white/90">
-                  {selectedExperience
-                    ? "Editar experiencia"
-                    : "Crear experiencia"}
-                </h2>
-
-                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                  {selectedExperience
-                    ? "Actualiza la información de la experiencia seleccionada."
-                    : "Completa la información para registrar una nueva experiencia."}
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={handleCloseForm}
-                disabled={loading}
-                className="rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-800 dark:text-gray-300 dark:hover:bg-white/[0.03]"
-              >
-                Cerrar
-              </button>
-            </div>
-
-            <MissionExperienceForm
-              initialData={selectedExperience}
-              loading={loading}
-              onSubmit={handleSubmit}
-            />
-          </div>
-        </div>
-      )}
 
       <ConfirmModal
         open={Boolean(experienceToDelete)}

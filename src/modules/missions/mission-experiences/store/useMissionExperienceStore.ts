@@ -51,6 +51,12 @@ interface MissionExperienceState {
     expeuuid: string
   ) => Promise<void>;
 
+  deleteMissionExperienceImage: (
+    missionUuid: string,
+    expeuuid: string,
+    imageUuid: string
+  ) => Promise<void>;
+
   clearExperience: () => void;
 }
 
@@ -81,12 +87,14 @@ export const useMissionExperienceStore = create<MissionExperienceState>(
             search,
           });
 
+        const pagination = response?.data;
+
         set({
-          experiences: response.data?.data ?? response.data ?? [],
-          currentPage: response.data?.current_page ?? 1,
-          totalPages: response.data?.last_page ?? 1,
-          perPage: Number(response.data?.per_page ?? perPage),
-          total: response.data?.total ?? 0,
+          experiences: pagination?.data ?? [],
+          currentPage: pagination?.current_page ?? 1,
+          totalPages: pagination?.last_page ?? 1,
+          perPage: Number(pagination?.per_page ?? perPage),
+          total: pagination?.total ?? 0,
         });
       } catch (error) {
         console.error("Error fetchMissionExperiences:", error);
@@ -107,7 +115,7 @@ export const useMissionExperienceStore = create<MissionExperienceState>(
           );
 
         set({
-          experience: response?.data ?? response?.experience ?? null,
+          experience: response?.data ?? null,
         });
       } catch (error) {
         console.error("Error fetchMissionExperience:", error);
@@ -180,6 +188,34 @@ export const useMissionExperienceStore = create<MissionExperienceState>(
       }
     },
 
+    deleteMissionExperienceImage: async (missionUuid, expeuuid, imageUuid) => {
+      try {
+        const response =
+          await missionExperienceService.deleteMissionExperienceImage(
+            missionUuid,
+            expeuuid,
+            imageUuid
+          );
+
+        showSuccess(response?.message ?? "Imagen eliminada correctamente.");
+
+        set((store) => ({
+          experience: store.experience
+            ? {
+                ...store.experience,
+                images: store.experience.images?.filter(
+                  (image) => image.uuid !== imageUuid
+                ),
+              }
+            : store.experience,
+        }));
+      } catch (error) {
+        console.error("Error deleteMissionExperienceImage:", error);
+        handleApiError(error);
+        throw error;
+      }
+    },
+
     clearExperience: () => set({ experience: null }),
   })
-);  
+);

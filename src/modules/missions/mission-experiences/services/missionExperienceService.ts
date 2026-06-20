@@ -22,9 +22,29 @@ const buildMissionExperienceFormData = (payload: MissionExperiencePayload) => {
   formData.append("long_description", payload.long_description);
   formData.append("investment", String(payload.investment));
 
-  payload.images?.forEach((image, index) => {
+  payload.images?.slice(0, 4).forEach((image, index) => {
     if (image) {
       formData.append(`images[${index}]`, image);
+    }
+  });
+
+  payload.features?.forEach((feature, index) => {
+    const cleanFeature = feature.trim();
+
+    if (cleanFeature) {
+      formData.append(`features[${index}]`, cleanFeature);
+    }
+  });
+
+  payload.itineraries?.forEach((itinerary, index) => {
+    if (itinerary.day !== "" && itinerary.title.trim()) {
+      formData.append(`itineraries[${index}][day]`, String(itinerary.day));
+      formData.append(`itineraries[${index}][order]`, String(itinerary.order));
+      formData.append(`itineraries[${index}][title]`, itinerary.title.trim());
+      formData.append(
+        `itineraries[${index}][description]`,
+        itinerary.description.trim()
+      );
     }
   });
 
@@ -72,8 +92,6 @@ export const missionExperienceService = {
   ) => {
     const formData = buildMissionExperienceFormData(payload);
 
-    formData.append("_method", "PUT");
-
     const res = await api.post(
       `/admin/missions/${missionUuid}/experiences/${expeuuid}`,
       formData
@@ -87,6 +105,17 @@ export const missionExperienceService = {
       `/admin/missions/${missionUuid}/experiences/${expeuuid}`
     );
 
+    return res.data;
+  },
+
+  deleteMissionExperienceImage: async (
+    missionUuid: string,
+    expeuuid: string,
+    imageUuid: string
+      ) => {
+        const res = await api.delete(
+          `/admin/missions/${missionUuid}/experiences/${expeuuid}/images/${imageUuid}`
+        );
     return res.data;
   },
 };

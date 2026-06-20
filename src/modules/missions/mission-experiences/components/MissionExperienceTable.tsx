@@ -1,7 +1,5 @@
 "use client";
 
-import Image from "next/image";
-
 import Badge from "@/shared/components/ui/badge/Badge";
 import DataTable, {
   DataTableColumn,
@@ -116,16 +114,6 @@ export default function MissionExperienceTable({
       showDelete={showDelete}
     />
   );
-}
-
-function getExperienceImageUrl(experience: MissionExperience) {
-  const firstImage = experience.images?.[0];
-
-  if (firstImage?.image_url) {
-    return firstImage.image_url;
-  }
-
-  return "";
 }
 
 function formatDate(date?: string) {
