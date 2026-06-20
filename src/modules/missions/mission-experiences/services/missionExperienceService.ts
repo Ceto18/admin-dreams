@@ -1,0 +1,92 @@
+import { api } from "@/services/api";
+import { MissionExperiencePayload } from "../types";
+
+type GetMissionExperiencesParams = {
+  page?: number;
+  per_page?: number;
+  search?: string;
+};
+
+const buildMissionExperienceFormData = (payload: MissionExperiencePayload) => {
+  const formData = new FormData();
+
+  formData.append("name", payload.name);
+  formData.append("short_description", payload.short_description);
+  formData.append("release_date", payload.release_date);
+  formData.append("number_seats", String(payload.number_seats));
+  formData.append("seats_used", String(payload.seats_used));
+  formData.append("days", String(payload.days));
+  formData.append("nights", String(payload.nights));
+  formData.append("raiting", String(payload.raiting));
+  formData.append("subtitle", payload.subtitle);
+  formData.append("long_description", payload.long_description);
+  formData.append("investment", String(payload.investment));
+
+  payload.images?.forEach((image, index) => {
+    if (image) {
+      formData.append(`images[${index}]`, image);
+    }
+  });
+
+  return formData;
+};
+
+export const missionExperienceService = {
+  getMissionExperiences: async (
+    missionUuid: string,
+    params: GetMissionExperiencesParams = {}
+  ) => {
+    const res = await api.get(`/admin/missions/${missionUuid}/experiences`, {
+      params,
+    });
+
+    return res.data;
+  },
+
+  getMissionExperience: async (missionUuid: string, expeuuid: string) => {
+    const res = await api.get(
+      `/admin/missions/${missionUuid}/experiences/${expeuuid}`
+    );
+
+    return res.data;
+  },
+
+  createMissionExperience: async (
+    missionUuid: string,
+    payload: MissionExperiencePayload
+  ) => {
+    const formData = buildMissionExperienceFormData(payload);
+
+    const res = await api.post(
+      `/admin/missions/${missionUuid}/experiences`,
+      formData
+    );
+
+    return res.data;
+  },
+
+  updateMissionExperience: async (
+    missionUuid: string,
+    expeuuid: string,
+    payload: MissionExperiencePayload
+  ) => {
+    const formData = buildMissionExperienceFormData(payload);
+
+    formData.append("_method", "PUT");
+
+    const res = await api.post(
+      `/admin/missions/${missionUuid}/experiences/${expeuuid}`,
+      formData
+    );
+
+    return res.data;
+  },
+
+  deleteMissionExperience: async (missionUuid: string, expeuuid: string) => {
+    const res = await api.delete(
+      `/admin/missions/${missionUuid}/experiences/${expeuuid}`
+    );
+
+    return res.data;
+  },
+};

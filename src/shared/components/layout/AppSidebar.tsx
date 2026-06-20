@@ -40,10 +40,26 @@ const navItems: NavItem[] = [
     name: "Inicio",
     path: "/home",
   },
+  // {
+  //   icon: <MembershipPlansIcon />,
+  //   name: "Misiones",
+  //   path: "/missions",
+  // },
   {
     icon: <MembershipPlansIcon />,
-    name: "Membresia",
-    path: "/membership",
+    name: "Misiones",
+    subItems: [
+      {
+        name: "Misiones",
+        path: "/missions",
+        pro: false,
+      },
+      // {
+      //   name: "Mission All",
+      //   path: "/mission-all",
+      //   pro: false,
+      // },
+    ],
   },
   {
     icon: <Building2Icon />,
