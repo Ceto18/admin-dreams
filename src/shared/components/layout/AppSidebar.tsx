@@ -54,11 +54,11 @@ const navItems: NavItem[] = [
         path: "/missions",
         pro: false,
       },
-      // {
-      //   name: "Mission All",
-      //   path: "/mission-all",
-      //   pro: false,
-      // },
+      {
+        name: "Momentos",
+        path: "/moments",
+        pro: false,
+      },
     ],
   },
   {
