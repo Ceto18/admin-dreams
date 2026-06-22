@@ -38,20 +38,27 @@ interface MissionMomentState {
     missionUuid: string,
     experienceUuid: string,
     payload: MissionMomentPayload
-  ) => Promise<boolean>;
+  ) => Promise<void>;
 
   updateMissionMoment: (
     missionUuid: string,
     experienceUuid: string,
     momentUuid: string,
     payload: MissionMomentPayload
-  ) => Promise<boolean>;
+  ) => Promise<void>;
 
   deleteMissionMoment: (
     missionUuid: string,
     experienceUuid: string,
     momentUuid: string
-  ) => Promise<boolean>;
+  ) => Promise<void>;
+
+  deleteMissionMomentImage: (
+    missionUuid: string,
+    experienceUuid: string,
+    momentUuid: string,
+    imageUuid: string
+  ) => Promise<void>;
 
   clearMissionMoment: () => void;
 }
@@ -70,28 +77,33 @@ export const useMissionMomentStore = create<MissionMomentState>((set, get) => ({
     missionUuid,
     experienceUuid,
     page = 1,
-    perPage = 10,
+    perPage = get().perPage,
     search = "",
   }) => {
     try {
       set({ loading: true });
 
-      const data = await missionMomentService.getMissionMoments({
+      const response = await missionMomentService.getMissionMoments(
         missionUuid,
         experienceUuid,
-        page,
-        perPage,
-        search,
-      });
+        {
+          page,
+          per_page: perPage,
+          search,
+        }
+      );
+
+      const pagination = response?.data;
 
       set({
-        moments: data.data,
-        currentPage: data.current_page,
-        totalPages: data.last_page,
-        perPage: data.per_page,
-        total: data.total,
+        moments: pagination?.data ?? [],
+        currentPage: pagination?.current_page ?? 1,
+        totalPages: pagination?.last_page ?? 1,
+        perPage: Number(pagination?.per_page ?? perPage),
+        total: pagination?.total ?? 0,
       });
     } catch (error) {
+      console.error("Error fetchMissionMoments:", error);
       handleApiError(error);
     } finally {
       set({ loading: false });
@@ -100,16 +112,19 @@ export const useMissionMomentStore = create<MissionMomentState>((set, get) => ({
 
   fetchMissionMoment: async (missionUuid, experienceUuid, momentUuid) => {
     try {
-      set({ loading: true });
+      set({ loading: true, moment: null });
 
-      const moment = await missionMomentService.getMissionMoment(
+      const response = await missionMomentService.getMissionMoment(
         missionUuid,
         experienceUuid,
         momentUuid
       );
 
-      set({ moment });
+      set({
+        moment: response?.data ?? null,
+      });
     } catch (error) {
+      console.error("Error fetchMissionMoment:", error);
       handleApiError(error);
     } finally {
       set({ loading: false });
@@ -120,25 +135,17 @@ export const useMissionMomentStore = create<MissionMomentState>((set, get) => ({
     try {
       set({ loading: true });
 
-      await missionMomentService.createMissionMoment(
+      const response = await missionMomentService.createMissionMoment(
         missionUuid,
         experienceUuid,
         payload
       );
 
-      showSuccess("Momento creado correctamente");
-
-      await get().fetchMissionMoments({
-        missionUuid,
-        experienceUuid,
-        page: get().currentPage,
-        perPage: get().perPage,
-      });
-
-      return true;
+      showSuccess(response?.message ?? "Momento creado correctamente.");
     } catch (error) {
+      console.error("Error createMissionMoment:", error);
       handleApiError(error);
-      return false;
+      throw error;
     } finally {
       set({ loading: false });
     }
@@ -153,26 +160,18 @@ export const useMissionMomentStore = create<MissionMomentState>((set, get) => ({
     try {
       set({ loading: true });
 
-      await missionMomentService.updateMissionMoment(
+      const response = await missionMomentService.updateMissionMoment(
         missionUuid,
         experienceUuid,
         momentUuid,
         payload
       );
 
-      showSuccess("Momento actualizado correctamente");
-
-      await get().fetchMissionMoments({
-        missionUuid,
-        experienceUuid,
-        page: get().currentPage,
-        perPage: get().perPage,
-      });
-
-      return true;
+      showSuccess(response?.message ?? "Momento actualizado correctamente.");
     } catch (error) {
+      console.error("Error updateMissionMoment:", error);
       handleApiError(error);
-      return false;
+      throw error;
     } finally {
       set({ loading: false });
     }
@@ -182,31 +181,65 @@ export const useMissionMomentStore = create<MissionMomentState>((set, get) => ({
     try {
       set({ loading: true });
 
-      await missionMomentService.deleteMissionMoment(
+      const response = await missionMomentService.deleteMissionMoment(
         missionUuid,
         experienceUuid,
         momentUuid
       );
 
-      showSuccess("Momento eliminado correctamente");
-
-      await get().fetchMissionMoments({
-        missionUuid,
-        experienceUuid,
-        page: get().currentPage,
-        perPage: get().perPage,
-      });
-
-      return true;
+      showSuccess(response?.message ?? "Momento eliminado correctamente.");
     } catch (error) {
+      console.error("Error deleteMissionMoment:", error);
       handleApiError(error);
-      return false;
+      throw error;
     } finally {
       set({ loading: false });
     }
   },
 
-  clearMissionMoment: () => {
-    set({ moment: null });
+  deleteMissionMomentImage: async (
+    missionUuid,
+    experienceUuid,
+    momentUuid,
+    imageUuid
+  ) => {
+    try {
+      const response = await missionMomentService.deleteMissionMomentImage(
+        missionUuid,
+        experienceUuid,
+        momentUuid,
+        imageUuid
+      );
+
+      showSuccess(response?.message ?? "Imagen eliminada correctamente.");
+
+      set((state) => ({
+        moment: state.moment
+          ? {
+              ...state.moment,
+              images: state.moment.images?.filter(
+                (image) => image.uuid !== imageUuid
+              ),
+            }
+          : state.moment,
+
+        moments: state.moments.map((moment) =>
+          moment.uuid === momentUuid
+            ? {
+                ...moment,
+                images: moment.images?.filter(
+                  (image) => image.uuid !== imageUuid
+                ),
+              }
+            : moment
+        ),
+      }));
+    } catch (error) {
+      console.error("Error deleteMissionMomentImage:", error);
+      handleApiError(error);
+      throw error;
+    }
   },
+
+  clearMissionMoment: () => set({ moment: null }),
 }));

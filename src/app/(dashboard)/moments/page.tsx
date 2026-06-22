@@ -9,7 +9,7 @@ import ConfirmModal from "@/shared/components/ui/modal/ConfirmModal";
 import Select from "@/shared/components/form/Select";
 
 import MissionMomentForm from "@/modules/mission-moments/components/form/MissionMomentForm";
-import MissionMomentTable from "@/modules/mission-moments/components/MissionExperienceTable";
+import MissionMomentTable from "@/modules/mission-moments/components/MissionMomentTable";
 
 import { useMissionStore } from "@/modules/missions/store/useMissionStore";
 import { useMissionExperienceStore } from "@/modules/missions/mission-experiences/store/useMissionExperienceStore";
@@ -59,6 +59,7 @@ export default function MissionMomentsPage() {
     createMissionMoment,
     updateMissionMoment,
     deleteMissionMoment,
+    deleteMissionMomentImage,
   } = useMissionMomentStore();
 
   const [search, setSearch] = useState("");
@@ -70,6 +71,13 @@ export default function MissionMomentsPage() {
     null
   );
   const [momentToDelete, setMomentToDelete] = useState<MissionMoment | null>(
+    null
+  );
+
+  const [imageToDeleteUuid, setImageToDeleteUuid] = useState<string | null>(
+    null
+  );
+  const [imageDeletingUuid, setImageDeletingUuid] = useState<string | null>(
     null
   );
 
@@ -122,6 +130,7 @@ export default function MissionMomentsPage() {
       perPage,
       search,
     });
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [missionUuid, experienceUuid, canFetchMoments, fetchMissionMoments, perPage]);
 
@@ -131,12 +140,16 @@ export default function MissionMomentsPage() {
     setSelectedMoment(null);
     setShowForm(false);
     setSearch("");
+    setImageToDeleteUuid(null);
+    setImageDeletingUuid(null);
   };
 
   const handleExperienceChange = (value: string) => {
     setExperienceUuid(value);
     setSelectedMoment(null);
     setShowForm(false);
+    setImageToDeleteUuid(null);
+    setImageDeletingUuid(null);
   };
 
   const handleSearchChange = (value: string) => {
@@ -186,19 +199,25 @@ export default function MissionMomentsPage() {
     }
 
     setSelectedMoment(null);
+    setImageToDeleteUuid(null);
+    setImageDeletingUuid(null);
     setShowForm(true);
   };
 
   const handleOpenEdit = (moment: MissionMoment) => {
     setSelectedMoment(moment);
+    setImageToDeleteUuid(null);
+    setImageDeletingUuid(null);
     setShowForm(true);
   };
 
   const handleCloseForm = () => {
-    if (loading) return;
+    if (loading || imageDeletingUuid) return;
 
     setSelectedMoment(null);
     setShowForm(false);
+    setImageToDeleteUuid(null);
+    setImageDeletingUuid(null);
   };
 
   const handleSubmit = async (payload: MissionMomentPayload) => {
@@ -229,6 +248,8 @@ export default function MissionMomentsPage() {
 
       setSelectedMoment(null);
       setShowForm(false);
+      setImageToDeleteUuid(null);
+      setImageDeletingUuid(null);
     } catch {
       // El error ya se maneja en el store.
     }
@@ -268,6 +289,50 @@ export default function MissionMomentsPage() {
     setMomentToDelete(null);
   };
 
+  const handleDeleteCurrentImage = (imageUuid: string) => {
+    setImageToDeleteUuid(imageUuid);
+  };
+
+  const handleConfirmDeleteImage = async () => {
+    if (!imageToDeleteUuid || !missionUuid || !experienceUuid || !selectedMoment) {
+      return;
+    }
+
+    try {
+      setImageDeletingUuid(imageToDeleteUuid);
+
+      await deleteMissionMomentImage(
+        missionUuid,
+        experienceUuid,
+        selectedMoment.uuid,
+        imageToDeleteUuid
+      );
+
+      setSelectedMoment((prev) =>
+        prev
+          ? {
+              ...prev,
+              images: prev.images?.filter(
+                (image) => image.uuid !== imageToDeleteUuid
+              ),
+            }
+          : prev
+      );
+
+      setImageToDeleteUuid(null);
+    } catch {
+      // El error ya se maneja en el store.
+    } finally {
+      setImageDeletingUuid(null);
+    }
+  };
+
+  const handleCancelDeleteImage = () => {
+    if (imageDeletingUuid) return;
+
+    setImageToDeleteUuid(null);
+  };
+
   const tableData = canFetchMoments ? moments : [];
 
   return (
@@ -303,7 +368,7 @@ export default function MissionMomentsPage() {
             <button
               type="button"
               onClick={handleCloseForm}
-              disabled={loading}
+              disabled={loading || Boolean(imageDeletingUuid)}
               className="rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-800 dark:text-gray-300 dark:hover:bg-white/[0.03]"
             >
               Volver a la tabla
@@ -313,7 +378,9 @@ export default function MissionMomentsPage() {
           <MissionMomentForm
             initialData={selectedMoment}
             loading={loading}
+            imageDeletingUuid={imageDeletingUuid}
             onSubmit={handleSubmit}
+            onDeleteCurrentImage={handleDeleteCurrentImage}
           />
         </div>
       ) : (
@@ -399,6 +466,17 @@ export default function MissionMomentsPage() {
         loading={loading}
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
+      />
+
+      <ConfirmModal
+        open={Boolean(imageToDeleteUuid)}
+        title="Eliminar imagen"
+        message="¿Seguro que deseas eliminar esta imagen? Esta acción no se puede deshacer."
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        loading={Boolean(imageDeletingUuid)}
+        onConfirm={handleConfirmDeleteImage}
+        onCancel={handleCancelDeleteImage}
       />
     </div>
   );

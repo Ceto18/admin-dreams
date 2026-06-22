@@ -1,23 +1,13 @@
 import { api } from "@/services/api";
-
-import {
-  MissionMoment,
-  MissionMomentPagination,
-  MissionMomentPayload,
-} from "../types";
+import { MissionMomentPayload } from "../types";
 
 type GetMissionMomentsParams = {
-  missionUuid: string;
-  experienceUuid: string;
   page?: number;
-  perPage?: number;
+  per_page?: number;
   search?: string;
 };
 
-const basePath = (missionUuid: string, experienceUuid: string) =>
-  `/admin/missions/${missionUuid}/experiences/${experienceUuid}/moments`;
-
-const buildFormData = (payload: MissionMomentPayload) => {
+const buildMissionMomentFormData = (payload: MissionMomentPayload) => {
   const formData = new FormData();
 
   formData.append("title", payload.title);
@@ -28,100 +18,96 @@ const buildFormData = (payload: MissionMomentPayload) => {
   formData.append("ideal", payload.ideal);
   formData.append("sensation", payload.sensation);
 
-  payload.images?.forEach((image) => {
-    formData.append("images[]", image);
+  payload.images?.slice(0, 4).forEach((image, index) => {
+    if (image) {
+      formData.append(`images[${index}]`, image);
+    }
   });
 
   return formData;
 };
 
 export const missionMomentService = {
-  async getMissionMoments({
-    missionUuid,
-    experienceUuid,
-    page = 1,
-    perPage = 10,
-    search = "",
-  }: GetMissionMomentsParams) {
-    const response = await api.get(basePath(missionUuid, experienceUuid), {
-      params: {
-        page,
-        per_page: perPage,
-        search: search || undefined,
-      },
-    });
-
-    return response.data.data as MissionMomentPagination;
-  },
-
-  async getMissionMoment(
+  getMissionMoments: async (
     missionUuid: string,
     experienceUuid: string,
-    momentUuid: string
-  ) {
-    const response = await api.get(
-      `${basePath(missionUuid, experienceUuid)}/${momentUuid}`
-    );
-
-    return response.data.data as MissionMoment;
-  },
-
-  async createMissionMoment(
-    missionUuid: string,
-    experienceUuid: string,
-    payload: MissionMomentPayload
-  ) {
-    const formData = buildFormData(payload);
-
-    const response = await api.post(
-      basePath(missionUuid, experienceUuid),
-      formData,
+    params: GetMissionMomentsParams = {}
+  ) => {
+    const res = await api.get(
+      `/admin/missions/${missionUuid}/experiences/${experienceUuid}/moments`,
       {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        params,
       }
     );
 
-    return response.data.data as MissionMoment;
+    return res.data;
   },
 
-  async updateMissionMoment(
+  getMissionMoment: async (
+    missionUuid: string,
+    experienceUuid: string,
+    momentUuid: string
+  ) => {
+    const res = await api.get(
+      `/admin/missions/${missionUuid}/experiences/${experienceUuid}/moments/${momentUuid}`
+    );
+
+    return res.data;
+  },
+
+  createMissionMoment: async (
+    missionUuid: string,
+    experienceUuid: string,
+    payload: MissionMomentPayload
+  ) => {
+    const formData = buildMissionMomentFormData(payload);
+
+    const res = await api.post(
+      `/admin/missions/${missionUuid}/experiences/${experienceUuid}/moments`,
+      formData
+    );
+
+    return res.data;
+  },
+
+  updateMissionMoment: async (
     missionUuid: string,
     experienceUuid: string,
     momentUuid: string,
     payload: MissionMomentPayload
-  ) {
-    const formData = buildFormData(payload);
+  ) => {
+    const formData = buildMissionMomentFormData(payload);
 
-    /**
-     * Si tu backend Laravel usa PUT/PATCH con FormData,
-     * normalmente conviene enviar POST + _method=PUT.
-     */
-    formData.append("_method", "PUT");
-
-    const response = await api.post(
-      `${basePath(missionUuid, experienceUuid)}/${momentUuid}`,
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }
+    const res = await api.post(
+      `/admin/missions/${missionUuid}/experiences/${experienceUuid}/moments/${momentUuid}`,
+      formData
     );
 
-    return response.data.data as MissionMoment;
+    return res.data;
   },
 
-  async deleteMissionMoment(
+  deleteMissionMoment: async (
     missionUuid: string,
     experienceUuid: string,
     momentUuid: string
-  ) {
-    const response = await api.delete(
-      `${basePath(missionUuid, experienceUuid)}/${momentUuid}`
+  ) => {
+    const res = await api.delete(
+      `/admin/missions/${missionUuid}/experiences/${experienceUuid}/moments/${momentUuid}`
     );
 
-    return response.data;
+    return res.data;
+  },
+
+  deleteMissionMomentImage: async (
+    missionUuid: string,
+    experienceUuid: string,
+    momentUuid: string,
+    imageUuid: string
+  ) => {
+    const res = await api.delete(
+      `/admin/missions/${missionUuid}/experiences/${experienceUuid}/moments/${momentUuid}/images/${imageUuid}`
+    );
+
+    return res.data;
   },
 };

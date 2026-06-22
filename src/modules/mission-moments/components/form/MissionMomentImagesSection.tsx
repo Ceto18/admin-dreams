@@ -40,6 +40,12 @@ export default function MissionMomentImagesSection({
   const hasCurrentImages = currentImages.length > 0;
   const hasNewImages = imagePreviews.length > 0;
 
+  const handleDeleteCurrentImage = async (imageUuid: string) => {
+    if (!onDeleteCurrentImage) return;
+
+    await onDeleteCurrentImage(imageUuid);
+  };
+
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -99,6 +105,8 @@ export default function MissionMomentImagesSection({
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             {currentImages.map((image) => {
               const isDeleting = imageDeletingUuid === image.uuid;
+              const canDelete =
+                canDeleteCurrentImage && Boolean(onDeleteCurrentImage);
 
               return (
                 <div
@@ -117,12 +125,13 @@ export default function MissionMomentImagesSection({
                     </div>
                   )}
 
-                  {canDeleteCurrentImage && onDeleteCurrentImage && (
+                  {canDelete && (
                     <button
                       type="button"
                       disabled={loading || isDeleting}
-                      onClick={() => onDeleteCurrentImage(image.uuid)}
+                      onClick={() => handleDeleteCurrentImage(image.uuid)}
                       className="absolute right-2 top-2 rounded-lg bg-white/90 p-2 text-red-500 shadow-sm transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-gray-900/90 dark:hover:bg-red-500/10"
+                      title="Eliminar imagen"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -163,6 +172,7 @@ export default function MissionMomentImagesSection({
                   disabled={loading}
                   onClick={() => onRemoveSelectedImage(index)}
                   className="absolute right-2 top-2 rounded-lg bg-white/90 p-2 text-red-500 shadow-sm transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-gray-900/90 dark:hover:bg-red-500/10"
+                  title="Quitar imagen seleccionada"
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
