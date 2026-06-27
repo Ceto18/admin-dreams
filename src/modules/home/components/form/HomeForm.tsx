@@ -15,7 +15,9 @@ import HomeHeroImagesSection from "./HomeHeroImagesSection";
 interface Props {
   initialData?: Home | null;
   loading?: boolean;
+  deletingImageUuid?: string | null;
   onSubmit: (payload: HomePayload) => Promise<void> | void;
+  onDeleteExistingImage: (imageUuid: string) => Promise<void> | void;
 }
 
 const initialState: HeroFormState = {
@@ -31,7 +33,9 @@ const initialState: HeroFormState = {
 export default function HomeForm({
   initialData = null,
   loading = false,
+  deletingImageUuid = null,
   onSubmit,
+  onDeleteExistingImage,
 }: Props) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -148,6 +152,8 @@ export default function HomeForm({
         onImagesChange={handleImagesChange}
         onRemoveImage={handleRemoveImage}
         onClearImages={clearSelectedImages}
+        onDeleteExistingImage={onDeleteExistingImage}
+        deletingImageUuid={deletingImageUuid}
       />
 
       <div className="flex justify-end gap-3">

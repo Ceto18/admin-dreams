@@ -20,6 +20,8 @@ import {
   MissionMomentPayload,
 } from "@/modules/mission-moments/types";
 
+import { MissionExperience } from "@/modules/missions/mission-experiences/types";
+
 function TableAntLoading() {
   return (
     <div className="absolute inset-0 z-20 flex items-center justify-center rounded-xl bg-white/70 dark:bg-gray-950/70">
@@ -43,10 +45,8 @@ export default function MissionMomentsPage() {
   } = useMissionStore();
 
   const {
-    experiences,
     loading: loadingExperiences,
-    perPage: experiencePerPage,
-    fetchMissionExperiences,
+    fetchAllMissionExperiencesForSelect,
   } = useMissionExperienceStore();
 
   const {
@@ -65,6 +65,10 @@ export default function MissionMomentsPage() {
   const [search, setSearch] = useState("");
   const [missionUuid, setMissionUuid] = useState("");
   const [experienceUuid, setExperienceUuid] = useState("");
+
+  const [experienceOptionsData, setExperienceOptionsData] = useState<
+    MissionExperience[]
+  >([]);
 
   const [showForm, setShowForm] = useState(false);
   const [selectedMoment, setSelectedMoment] = useState<MissionMoment | null>(
@@ -92,11 +96,11 @@ export default function MissionMomentsPage() {
 
   const experienceOptions = useMemo(
     () =>
-      experiences.map((experience) => ({
+      experienceOptionsData.map((experience) => ({
         value: experience.uuid,
         label: experience.name,
       })),
-    [experiences]
+    [experienceOptionsData]
   );
 
   const canFetchMoments = Boolean(missionUuid && experienceUuid);
@@ -110,15 +114,18 @@ export default function MissionMomentsPage() {
   }, [fetchMissions, missionPerPage]);
 
   useEffect(() => {
-    if (!missionUuid) return;
+    if (!missionUuid) {
+      setExperienceOptionsData([]);
+      return;
+    }
 
-    fetchMissionExperiences({
-      missionUuid,
-      page: 1,
-      perPage: experiencePerPage,
-      search: "",
-    });
-  }, [missionUuid, experiencePerPage, fetchMissionExperiences]);
+    const loadExperiences = async () => {
+      const data = await fetchAllMissionExperiencesForSelect(missionUuid);
+      setExperienceOptionsData(data);
+    };
+
+    loadExperiences();
+  }, [missionUuid, fetchAllMissionExperiencesForSelect]);
 
   useEffect(() => {
     if (!canFetchMoments) return;
@@ -137,6 +144,7 @@ export default function MissionMomentsPage() {
   const handleMissionChange = (value: string) => {
     setMissionUuid(value);
     setExperienceUuid("");
+    setExperienceOptionsData([]);
     setSelectedMoment(null);
     setShowForm(false);
     setSearch("");
@@ -294,7 +302,12 @@ export default function MissionMomentsPage() {
   };
 
   const handleConfirmDeleteImage = async () => {
-    if (!imageToDeleteUuid || !missionUuid || !experienceUuid || !selectedMoment) {
+    if (
+      !imageToDeleteUuid ||
+      !missionUuid ||
+      !experienceUuid ||
+      !selectedMoment
+    ) {
       return;
     }
 
@@ -401,6 +414,7 @@ export default function MissionMomentsPage() {
                 }
                 defaultValue={missionUuid}
                 onChange={handleMissionChange}
+                disabled={loadingMissions}
               />
             </div>
 
@@ -417,10 +431,17 @@ export default function MissionMomentsPage() {
                     ? "Primero selecciona una misión"
                     : loadingExperiences
                       ? "Cargando experiencias..."
-                      : "Selecciona una experiencia"
+                      : experienceOptions.length === 0
+                        ? "No hay experiencias disponibles"
+                        : "Selecciona una experiencia"
                 }
                 defaultValue={experienceUuid}
                 onChange={handleExperienceChange}
+                disabled={
+                  !missionUuid ||
+                  loadingExperiences ||
+                  experienceOptions.length === 0
+                }
               />
 
               {!missionUuid && (

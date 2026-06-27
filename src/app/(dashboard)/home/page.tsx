@@ -1,13 +1,26 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import HomeForm from "@/modules/home/components/form/HomeForm";
 import { useHomeStore } from "@/modules/home/store/useHomeStore";
 import { HomePayload } from "@/modules/home/types";
 
+import ConfirmModal from "@/shared/components/ui/modal/ConfirmModal";
+
 export default function HomePage() {
-    const { home, loading, fetchHome, updateHome } = useHomeStore();
+    const {
+        home,
+        loading,
+        deletingHeroImageUuid,
+        fetchHome,
+        updateHome,
+        deleteHeroImage,
+    } = useHomeStore();
+
+    const [imageToDeleteUuid, setImageToDeleteUuid] = useState<string | null>(
+        null
+    );
 
     useEffect(() => {
         fetchHome();
@@ -17,6 +30,32 @@ export default function HomePage() {
         await updateHome(payload);
 
         await fetchHome();
+    };
+
+    const handleDeleteExistingImage = (imageUuid: string) => {
+        setImageToDeleteUuid(imageUuid);
+    };
+
+    const handleConfirmDeleteImage = async () => {
+        if (!imageToDeleteUuid) return;
+
+        const imageUuid = imageToDeleteUuid;
+
+        setImageToDeleteUuid(null);
+
+        try {
+            await deleteHeroImage(imageUuid);
+
+            await fetchHome();
+        } catch (error) {
+            console.error("Error handleConfirmDeleteImage:", error);
+        }
+    };
+    
+    const handleCancelDeleteImage = () => {
+        if (deletingHeroImageUuid) return;
+
+        setImageToDeleteUuid(null);
     };
 
     return (
@@ -45,7 +84,20 @@ export default function HomePage() {
             <HomeForm
                 initialData={home}
                 loading={loading}
+                deletingImageUuid={deletingHeroImageUuid}
                 onSubmit={handleSubmit}
+                onDeleteExistingImage={handleDeleteExistingImage}
+            />
+
+            <ConfirmModal
+                open={Boolean(imageToDeleteUuid)}
+                title="Eliminar imagen"
+                message="¿Seguro que deseas eliminar esta imagen del hero? Esta acción no se puede deshacer."
+                confirmText="Eliminar"
+                cancelText="Cancelar"
+                loading={Boolean(deletingHeroImageUuid)}
+                onConfirm={handleConfirmDeleteImage}
+                onCancel={handleCancelDeleteImage}
             />
         </div>
     );

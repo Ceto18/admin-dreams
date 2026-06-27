@@ -36,7 +36,7 @@ const navItems: NavItem[] = [
     path: "/",
   },
   {
-    icon: <GridIcon />,
+    icon: <Building2Icon />,
     name: "Inicio",
     path: "/home",
   },
@@ -61,26 +61,26 @@ const navItems: NavItem[] = [
       },
     ],
   },
-  {
-    icon: <Building2Icon />,
-    name: "Organizaciones",
-    path: "/organizations",
-  },
-  {
-    icon: <WalletIcon />,
-    name: "Tarjetas de presentación",
-    path: "/cards",
-  },
-  {
-    icon: <CreditCardIcon />,
-    name: "Planes",
-    path: "/plans",
-  },
-  {
-    icon: <DiscountCodeIcon />,
-    name: "Códigos de Descuento",
-    path: "/discount-codes",
-  },
+  // {
+  //   icon: <Building2Icon />,
+  //   name: "Organizaciones",
+  //   path: "/organizations",
+  // },
+  // {
+  //   icon: <WalletIcon />,
+  //   name: "Tarjetas de presentación",
+  //   path: "/cards",
+  // },
+  // {
+  //   icon: <CreditCardIcon />,
+  //   name: "Planes",
+  //   path: "/plans",
+  // },
+  // {
+  //   icon: <DiscountCodeIcon />,
+  //   name: "Códigos de Descuento",
+  //   path: "/discount-codes",
+  // },
 ];
 
 const AppSidebar: React.FC = () => {
@@ -269,46 +269,52 @@ const AppSidebar: React.FC = () => {
 
   return (
     <aside
-      className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 
-        ${isExpanded || isMobileOpen
+      className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-3 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 ${isExpanded || isMobileOpen
+        ? "w-[290px]"
+        : isHovered
           ? "w-[290px]"
-          : isHovered
-            ? "w-[290px]"
-            : "w-[90px]"
+          : "w-[90px]"
         }
-        ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
-        lg:translate-x-0`}
+  ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
+  lg:translate-x-0`}
       onMouseEnter={() => !isExpanded && setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       <div
-        className={`py-8 flex ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
+        className={`pt-4 pb-5 flex items-center ${!isExpanded && !isHovered && !isMobileOpen
+          ? "lg:justify-center"
+          : "justify-center"
           }`}
       >
-        <Link href="/">
+        <Link href="/" className="flex items-center justify-center w-full">
           {isExpanded || isHovered || isMobileOpen ? (
             <>
               <Image
                 className="dark:hidden"
-                src="/images/logo/qori-logo-200.png"
+                src="/images/logo/logo-100.png"
                 alt="Logo"
                 width={150}
                 height={40}
+                priority
               />
+
               <Image
                 className="hidden dark:block"
-                src="/images/logo/qori-logo-200.png"
+                src="/images/logo/logo-100.png"
                 alt="Logo"
                 width={150}
                 height={40}
+                priority
               />
             </>
           ) : (
             <Image
-              src="/images/logo/qori-logo.png"
+              src="/images/logo/logo-d.png"
               alt="Logo"
               width={32}
               height={32}
+              className="object-contain"
+              priority
             />
           )}
         </Link>
@@ -319,7 +325,7 @@ const AppSidebar: React.FC = () => {
           <div className="flex flex-col gap-4">
             <div>
               <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered
+                className={`mb-3 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered && !isMobileOpen
                   ? "lg:justify-center"
                   : "justify-start"
                   }`}

@@ -53,4 +53,10 @@ export const homeService = {
 
     return res.data;
   },
+
+  deleteHeroImage: async (imageUuid: string) => {
+    const res = await api.delete(`/admin/home/hero/${imageUuid}`);
+
+    return res.data;
+  },
 };

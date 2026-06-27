@@ -8,15 +8,18 @@ import { handleApiError } from "@/shared/utils/handleApiError";
 interface HomeState {
   home: Home | null;
   loading: boolean;
+  deletingHeroImageUuid: string | null;
 
   fetchHome: () => Promise<void>;
   updateHome: (payload: HomePayload) => Promise<void>;
+  deleteHeroImage: (imageUuid: string) => Promise<void>;
   clearHome: () => void;
 }
 
 export const useHomeStore = create<HomeState>((set) => ({
   home: null,
   loading: false,
+  deletingHeroImageUuid: null,
 
   fetchHome: async () => {
     try {
@@ -69,9 +72,43 @@ export const useHomeStore = create<HomeState>((set) => ({
     }
   },
 
+  deleteHeroImage: async (imageUuid) => {
+    try {
+      set({ deletingHeroImageUuid: imageUuid });
+
+      const response = await homeService.deleteHeroImage(imageUuid);
+
+      showSuccess(response?.message ?? "Imagen eliminada correctamente.");
+
+      set((state) => {
+        if (!state.home) return state;
+
+        return {
+          home: {
+            ...state.home,
+            hero: {
+              ...state.home.hero,
+              images:
+                state.home.hero?.images?.filter(
+                  (image) => image.uuid !== imageUuid
+                ) ?? [],
+            },
+          },
+        };
+      });
+    } catch (error) {
+      console.error("Error deleteHeroImage:", error);
+      handleApiError(error);
+      throw error;
+    } finally {
+      set({ deletingHeroImageUuid: null });
+    }
+  },
+
   clearHome: () => {
     set({
       home: null,
+      deletingHeroImageUuid: null,
     });
   },
 }));

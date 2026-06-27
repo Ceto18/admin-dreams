@@ -5,6 +5,7 @@ import Button from "@/shared/components/ui/button/Button";
 import FormSection from "@/shared/components/form/Form";
 
 type HeroImage = {
+  uuid: string;
   name?: string | null;
   image_url: string;
 };
@@ -16,6 +17,8 @@ interface Props {
   onImagesChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onRemoveImage: (index: number) => void;
   onClearImages: () => void;
+  onDeleteExistingImage: (imageUuid: string) => void;
+  deletingImageUuid?: string | null;
 }
 
 export default function HomeHeroImagesSection({
@@ -25,6 +28,8 @@ export default function HomeHeroImagesSection({
   onImagesChange,
   onRemoveImage,
   onClearImages,
+  onDeleteExistingImage,
+  deletingImageUuid = null,
 }: Props) {
   const hasExistingImages = existingImages.length > 0;
   const hasNewImages = imagePreviews.length > 0;
@@ -62,30 +67,44 @@ export default function HomeHeroImagesSection({
 
           {hasExistingImages ? (
             <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {existingImages.map((image, index) => (
-                <div
-                  key={`${image.image_url}-${index}`}
-                  className="group relative h-48 overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 text-left transition dark:border-gray-800 dark:bg-gray-900"
-                >
-                  <Image
-                    src={image.image_url}
-                    alt={image.name || `Imagen actual ${index + 1}`}
-                    fill
-                    unoptimized
-                    className="object-cover transition duration-300 group-hover:scale-105"
-                  />
+              {existingImages.map((image, index) => {
+                const isDeleting = deletingImageUuid === image.uuid;
 
-                  <div className="absolute left-3 top-3 rounded-full bg-black/60 px-3 py-1 text-xs font-medium text-white backdrop-blur">
-                    Actual #{index + 1}
-                  </div>
+                return (
+                  <div
+                    key={image.uuid}
+                    className="group relative h-48 overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 text-left transition dark:border-gray-800 dark:bg-gray-900"
+                  >
+                    <Image
+                      src={image.image_url}
+                      alt={image.name || `Imagen actual ${index + 1}`}
+                      fill
+                      unoptimized
+                      className={`object-cover transition duration-300 group-hover:scale-105 ${isDeleting ? "opacity-50" : ""
+                        }`}
+                    />
 
-                  {image.name && (
-                    <div className="absolute bottom-3 left-3 right-3 truncate rounded-lg bg-black/60 px-3 py-2 text-xs text-white backdrop-blur">
-                      {image.name}
+                    <div className="absolute left-3 top-3 rounded-full bg-black/60 px-3 py-1 text-xs font-medium text-white backdrop-blur">
+                      Actual #{index + 1}
                     </div>
-                  )}
-                </div>
-              ))}
+
+                    <button
+                      type="button"
+                      onClick={() => onDeleteExistingImage(image.uuid)}
+                      disabled={isDeleting}
+                      className="absolute right-3 top-3 rounded-full bg-red-600 px-3 py-1 text-xs font-semibold text-white shadow-sm backdrop-blur transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-70"
+                    >
+                      {isDeleting ? "Eliminando..." : "Eliminar"}
+                    </button>
+
+                    {image.name && (
+                      <div className="absolute bottom-3 left-3 right-3 truncate rounded-lg bg-black/60 px-3 py-2 text-xs text-white backdrop-blur">
+                        {image.name}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <div className="mt-4 flex h-48 items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-gray-50 text-sm text-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400">

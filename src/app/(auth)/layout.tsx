@@ -19,20 +19,21 @@ export default function AuthLayout({
 
                     <div className="lg:w-1/2 w-full h-full bg-[#020617] dark:bg-white/5 lg:grid items-center hidden">
                         <div className="relative items-center justify-center flex z-1">
-                            {/* <!-- ===== Common Grid Shape Start ===== --> */}
                             <GridShape />
 
-                            <div className="flex flex-col items-center max-w-xs">
-                                <Link href="/" className="block mb-4">
+                            <div className="flex flex-col items-center w-full max-w-2xl px-8">
+                                <Link href="/" className="block mb-6">
                                     <Image
-                                        width={231}
-                                        height={48}
+                                        width={640}
+                                        height={180}
                                         src="/images/logo/logo-100.png"
                                         alt="DreamsPlanetXP Logo"
+                                        priority
+                                        className="w-[430px] lg:w-[540px] xl:w-[620px] h-auto object-contain"
                                     />
                                 </Link>
 
-                                <p className="text-center text-gray-400 dark:text-white/60">
+                                <p className="max-w-sm text-center text-gray-400 dark:text-white/60">
                                     Administra experiencias de viaje, misiones y momentos únicos desde un solo lugar.
                                 </p>
                             </div>

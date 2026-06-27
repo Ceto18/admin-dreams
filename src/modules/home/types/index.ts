@@ -1,4 +1,5 @@
 export type HomeHeroImage = {
+  uuid: string;
   name: string;
   image_url: string;
 };

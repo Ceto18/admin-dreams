@@ -30,6 +30,10 @@ interface MissionExperienceState {
     params: FetchMissionExperiencesParams
   ) => Promise<void>;
 
+  fetchAllMissionExperiencesForSelect: (
+    missionUuid: string
+  ) => Promise<MissionExperience[]>;
+
   fetchMissionExperience: (
     missionUuid: string,
     expeuuid: string
@@ -99,6 +103,41 @@ export const useMissionExperienceStore = create<MissionExperienceState>(
       } catch (error) {
         console.error("Error fetchMissionExperiences:", error);
         handleApiError(error);
+      } finally {
+        set({ loading: false });
+      }
+    },
+
+    fetchAllMissionExperiencesForSelect: async (missionUuid) => {
+      try {
+        set({ loading: true });
+
+        const perPage = get().perPage;
+        let page = 1;
+        let lastPage = 1;
+        const allExperiences: MissionExperience[] = [];
+
+        do {
+          const response =
+            await missionExperienceService.getMissionExperiences(missionUuid, {
+              page,
+              per_page: perPage,
+              search: "",
+            });
+
+          const pagination = response?.data;
+
+          allExperiences.push(...(pagination?.data ?? []));
+
+          lastPage = Number(pagination?.last_page ?? 1);
+          page += 1;
+        } while (page <= lastPage);
+
+        return allExperiences;
+      } catch (error) {
+        console.error("Error fetchAllMissionExperiencesForSelect:", error);
+        handleApiError(error);
+        return [];
       } finally {
         set({ loading: false });
       }
