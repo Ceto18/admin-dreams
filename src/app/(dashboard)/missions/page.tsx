@@ -45,12 +45,16 @@ export default function MissionsPage() {
   const [missionToDelete, setMissionToDelete] = useState<Mission | null>(null);
 
   useEffect(() => {
-    fetchMissions({
-      page: 1,
-      perPage,
-      search: "",
-    });
-  }, [fetchMissions, perPage]);
+    const timeout = setTimeout(() => {
+      fetchMissions({
+        page: 1,
+        perPage,
+        search: search.trim(),
+      });
+    }, 500);
+
+    return () => clearTimeout(timeout);
+  }, [search, perPage, fetchMissions]);
 
   const handleSearchChange = (value: string) => {
     setSearch(value);

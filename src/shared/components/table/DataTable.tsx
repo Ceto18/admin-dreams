@@ -55,6 +55,7 @@ export default function DataTable<T>({
   const canDelete = showDelete && !!onDelete;
 
   const hasActions = canView || canEdit || canDelete;
+  const totalColumns = columns.length + (hasActions ? 1 : 0);
 
   const getAlignClass = (align?: "left" | "center" | "right") => {
     switch (align) {
@@ -100,21 +101,21 @@ export default function DataTable<T>({
             <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
               {loading ? (
                 <TableRow>
-                  <TableCell
-                    colSpan={columns.length + (hasActions ? 1 : 0)}
+                  <td
+                    colSpan={totalColumns}
                     className="px-5 py-8 text-center text-sm text-gray-500 dark:text-gray-400"
                   >
                     Cargando datos...
-                  </TableCell>
+                  </td>
                 </TableRow>
               ) : data.length === 0 ? (
                 <TableRow>
-                  <TableCell
-                    colSpan={columns.length + (hasActions ? 1 : 0)}
+                  <td
+                    colSpan={totalColumns}
                     className="px-5 py-8 text-center text-sm text-gray-500 dark:text-gray-400"
                   >
                     {emptyMessage}
-                  </TableCell>
+                  </td>
                 </TableRow>
               ) : (
                 data.map((row, rowIndex) => (
