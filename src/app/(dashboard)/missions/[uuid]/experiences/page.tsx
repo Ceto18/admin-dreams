@@ -41,6 +41,7 @@ export default function MissionExperiencesPage() {
     perPage,
     fetchMissionExperiences,
     deleteMissionExperience,
+    updateMissionExperienceState,
   } = useMissionExperienceStore();
 
   const [search, setSearch] = useState("");
@@ -98,13 +99,22 @@ export default function MissionExperiencesPage() {
   };
 
   const handleEdit = (experience: MissionExperience) => {
-    router.push(
-      `/missions/${missionUuid}/experiences/${experience.uuid}/edit`
-    );
+    router.push(`/missions/${missionUuid}/experiences/${experience.uuid}/edit`);
   };
 
   const handleDelete = (experience: MissionExperience) => {
     setExperienceToDelete(experience);
+  };
+
+  const handleChangeState = async (
+    experience: MissionExperience,
+    state: boolean
+  ) => {
+    try {
+      await updateMissionExperienceState(missionUuid, experience.uuid, state);
+    } catch {
+      // El error ya se maneja en el store.
+    }
   };
 
   const handleConfirmDelete = async () => {
@@ -162,6 +172,7 @@ export default function MissionExperiencesPage() {
           onView={handleView}
           onEdit={handleEdit}
           onDelete={handleDelete}
+          onChangeState={handleChangeState}
           showView
           showEdit
           showDelete

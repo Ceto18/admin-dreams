@@ -1,19 +1,51 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { Spin } from "antd";
 
 import MissionForm from "@/modules/missions/components/form/MissionForm";
 import { useMissionStore } from "@/modules/missions/store/useMissionStore";
 import { MissionPayload } from "@/modules/missions/types";
 
-export default function MissionCreatePage() {
-    const router = useRouter();
+function PageLoading() {
+    return (
+        <div className="flex min-h-[400px] items-center justify-center">
+            <div className="flex flex-col items-center gap-3 rounded-xl border border-gray-200 bg-white px-6 py-5 shadow-sm dark:border-white/[0.08] dark:bg-gray-900">
+                <Spin size="large" />
 
-    const { loading, createMission } = useMissionStore();
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                    Cargando misión...
+                </span>
+            </div>
+        </div>
+    );
+}
+
+export default function MissionEditPage() {
+    const router = useRouter();
+    const params = useParams();
+
+    const uuid = String(params.uuid ?? "");
+
+    const { mission, loading, fetchMission, updateMission, clearMission } =
+        useMissionStore();
+
+    useEffect(() => {
+        if (!uuid) return;
+
+        fetchMission(uuid);
+
+        return () => {
+            clearMission();
+        };
+    }, [uuid, fetchMission, clearMission]);
 
     const handleSubmit = async (payload: MissionPayload) => {
+        if (!uuid) return;
+
         try {
-            await createMission(payload);
+            await updateMission(uuid, payload);
 
             router.push("/missions");
         } catch {
@@ -26,6 +58,10 @@ export default function MissionCreatePage() {
 
         router.push("/missions");
     };
+
+    if (loading && !mission) {
+        return <PageLoading />;
+    }
 
     return (
         <div className="space-y-6">
@@ -40,12 +76,12 @@ export default function MissionCreatePage() {
                         </span>
 
                         <h1 className="mt-4 text-2xl font-semibold text-gray-800 dark:text-white/90 md:text-3xl">
-                            Crear misión
+                            Editar misión
                         </h1>
 
                         <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-500 dark:text-gray-400">
-                            Completa la información para registrar una nueva misión y definir
-                            si aparecerá destacada en el home de la landing.
+                            Actualiza la información de la misión, su imagen y su visibilidad
+                            destacada en el home de la landing.
                         </p>
                     </div>
 
@@ -60,7 +96,11 @@ export default function MissionCreatePage() {
                 </div>
             </div>
 
-            <MissionForm initialData={null} loading={loading} onSubmit={handleSubmit} />
+            <MissionForm
+                initialData={mission}
+                loading={loading}
+                onSubmit={handleSubmit}
+            />
         </div>
     );
 }

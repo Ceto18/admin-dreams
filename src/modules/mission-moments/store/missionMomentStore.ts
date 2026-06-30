@@ -112,7 +112,10 @@ export const useMissionMomentStore = create<MissionMomentState>((set, get) => ({
 
   fetchMissionMoment: async (missionUuid, experienceUuid, momentUuid) => {
     try {
-      set({ loading: true, moment: null });
+      set({
+        loading: true,
+        moment: null,
+      });
 
       const response = await missionMomentService.getMissionMoment(
         missionUuid,
@@ -120,8 +123,15 @@ export const useMissionMomentStore = create<MissionMomentState>((set, get) => ({
         momentUuid
       );
 
+      const momentData =
+        response?.data?.moment ??
+        response?.data?.data ??
+        response?.data ??
+        response?.moment ??
+        null;
+
       set({
-        moment: response?.data ?? null,
+        moment: momentData,
       });
     } catch (error) {
       console.error("Error fetchMissionMoment:", error);
@@ -168,6 +178,24 @@ export const useMissionMomentStore = create<MissionMomentState>((set, get) => ({
       );
 
       showSuccess(response?.message ?? "Momento actualizado correctamente.");
+
+      const updatedMoment =
+        response?.data?.moment ??
+        response?.data?.data ??
+        response?.data ??
+        response?.moment ??
+        null;
+
+      if (updatedMoment) {
+        set((state) => ({
+          moment:
+            state.moment?.uuid === momentUuid ? updatedMoment : state.moment,
+
+          moments: state.moments.map((moment) =>
+            moment.uuid === momentUuid ? updatedMoment : moment
+          ),
+        }));
+      }
     } catch (error) {
       console.error("Error updateMissionMoment:", error);
       handleApiError(error);
@@ -188,6 +216,11 @@ export const useMissionMomentStore = create<MissionMomentState>((set, get) => ({
       );
 
       showSuccess(response?.message ?? "Momento eliminado correctamente.");
+
+      set((state) => ({
+        moments: state.moments.filter((moment) => moment.uuid !== momentUuid),
+        moment: state.moment?.uuid === momentUuid ? null : state.moment,
+      }));
     } catch (error) {
       console.error("Error deleteMissionMoment:", error);
       handleApiError(error);
@@ -217,9 +250,10 @@ export const useMissionMomentStore = create<MissionMomentState>((set, get) => ({
         moment: state.moment
           ? {
               ...state.moment,
-              images: state.moment.images?.filter(
-                (image) => image.uuid !== imageUuid
-              ),
+              images:
+                state.moment.images?.filter(
+                  (image) => image.uuid !== imageUuid
+                ) ?? [],
             }
           : state.moment,
 
@@ -227,9 +261,10 @@ export const useMissionMomentStore = create<MissionMomentState>((set, get) => ({
           moment.uuid === momentUuid
             ? {
                 ...moment,
-                images: moment.images?.filter(
-                  (image) => image.uuid !== imageUuid
-                ),
+                images:
+                  moment.images?.filter(
+                    (image) => image.uuid !== imageUuid
+                  ) ?? [],
               }
             : moment
         ),
@@ -241,5 +276,9 @@ export const useMissionMomentStore = create<MissionMomentState>((set, get) => ({
     }
   },
 
-  clearMissionMoment: () => set({ moment: null }),
+  clearMissionMoment: () => {
+    set({
+      moment: null,
+    });
+  },
 }));

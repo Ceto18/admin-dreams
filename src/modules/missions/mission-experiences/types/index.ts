@@ -39,6 +39,7 @@ export type MissionExperience = {
   subtitle: string;
   long_description: string;
   investment: string | number;
+  state?: boolean;
   file?: string | null;
   images?: MissionExperienceImage[];
   features?: MissionExperienceFeature[];
@@ -69,4 +70,8 @@ export type DeleteMissionExperienceImageParams = {
   missionUuid: string;
   expeuuid: string;
   imageUuid: string;
+};
+
+export type UpdateMissionExperienceStatePayload = {
+  state: boolean;
 };

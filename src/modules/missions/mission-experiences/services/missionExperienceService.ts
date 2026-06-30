@@ -1,5 +1,8 @@
 import { api } from "@/services/api";
-import { MissionExperiencePayload } from "../types";
+import {
+  MissionExperiencePayload,
+  UpdateMissionExperienceStatePayload,
+} from "../types";
 
 type GetMissionExperiencesParams = {
   page?: number;
@@ -119,6 +122,19 @@ export const missionExperienceService = {
   ) => {
     const res = await api.delete(
       `/admin/missions/${missionUuid}/experiences/${expeuuid}/images/${imageUuid}`
+    );
+
+    return res.data;
+  },
+
+  updateMissionExperienceState: async (
+    missionUuid: string,
+    experienceUuid: string,
+    payload: UpdateMissionExperienceStatePayload
+  ) => {
+    const res = await api.put(
+      `/admin/missions/${missionUuid}/experiences/state/${experienceUuid}`,
+      payload
     );
 
     return res.data;

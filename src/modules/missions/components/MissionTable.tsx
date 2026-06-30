@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Switch } from "antd";
 import Image from "next/image";
 
@@ -36,6 +37,8 @@ export default function MissionTable({
   showEdit = true,
   showDelete = true,
 }: Props) {
+  const router = useRouter();
+
   const [updatingMissionUuid, setUpdatingMissionUuid] = useState<string | null>(
     null
   );
@@ -50,6 +53,24 @@ export default function MissionTable({
     } finally {
       setUpdatingMissionUuid(null);
     }
+  };
+
+  const handleView = (mission: Mission) => {
+    if (onView) {
+      onView(mission);
+      return;
+    }
+
+    router.push(`/missions/${mission.uuid}/experiences`);
+  };
+
+  const handleEdit = (mission: Mission) => {
+    if (onEdit) {
+      onEdit(mission);
+      return;
+    }
+
+    router.push(`/missions/${mission.uuid}/edit`);
   };
 
   const columns: DataTableColumn<Mission>[] = [
@@ -101,6 +122,29 @@ export default function MissionTable({
       ),
     },
     {
+      key: "featured_on_home",
+      header: "Home",
+      render: (mission) => {
+        const isFeatured = Boolean(Number(mission.featured_on_home ?? 0));
+
+        return isFeatured ? (
+          <div className="space-y-1">
+            <Badge size="sm" color="success">
+              Visible
+            </Badge>
+
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Orden {mission.home_order ?? "-"}
+            </p>
+          </div>
+        ) : (
+          <Badge size="sm" color="light">
+            No visible
+          </Badge>
+        );
+      },
+    },
+    {
       key: "active",
       header: "Habilitado",
       render: (mission) => (
@@ -125,8 +169,8 @@ export default function MissionTable({
       loading={loading}
       emptyMessage="No hay misiones registradas."
       getRowKey={(mission) => mission.uuid}
-      onView={onView}
-      onEdit={onEdit}
+      onView={handleView}
+      onEdit={handleEdit}
       onDelete={onDelete}
       showView={showView}
       showEdit={showEdit}

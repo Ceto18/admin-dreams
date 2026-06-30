@@ -15,8 +15,15 @@ const buildMissionFormData = (payload: MissionPayload) => {
   formData.append("country", payload.country);
 
   formData.append(
-    "active",
-    payload.active === undefined ? "1" : String(Number(Boolean(payload.active)))
+    "featured_on_home",
+    payload.featured_on_home ? "1" : "0"
+  );
+
+  formData.append(
+    "home_order",
+    payload.home_order !== null && payload.home_order !== undefined
+      ? String(payload.home_order)
+      : ""
   );
 
   if (payload.image) {
@@ -44,7 +51,11 @@ export const missionService = {
   createMission: async (payload: MissionPayload) => {
     const formData = buildMissionFormData(payload);
 
-    const res = await api.post("/admin/missions", formData);
+    const res = await api.post("/admin/missions", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
 
     return res.data;
   },
@@ -52,7 +63,11 @@ export const missionService = {
   updateMission: async (uuid: string, payload: MissionPayload) => {
     const formData = buildMissionFormData(payload);
 
-    const res = await api.post(`/admin/missions/${uuid}`, formData);
+    const res = await api.post(`/admin/missions/${uuid}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
 
     return res.data;
   },

@@ -50,6 +50,12 @@ interface MissionExperienceState {
     payload: MissionExperiencePayload
   ) => Promise<void>;
 
+  updateMissionExperienceState: (
+    missionUuid: string,
+    experienceUuid: string,
+    state: boolean
+  ) => Promise<void>;
+
   deleteMissionExperience: (
     missionUuid: string,
     expeuuid: string
@@ -200,6 +206,54 @@ export const useMissionExperienceStore = create<MissionExperienceState>(
         );
       } catch (error) {
         console.error("Error updateMissionExperience:", error);
+        handleApiError(error);
+        throw error;
+      } finally {
+        set({ loading: false });
+      }
+    },
+
+    updateMissionExperienceState: async (
+      missionUuid,
+      experienceUuid,
+      state
+    ) => {
+      try {
+        set({ loading: true });
+
+        const response =
+          await missionExperienceService.updateMissionExperienceState(
+            missionUuid,
+            experienceUuid,
+            { state }
+          );
+
+        set((store) => ({
+          experiences: store.experiences.map((experience) =>
+            experience.uuid === experienceUuid
+              ? {
+                  ...experience,
+                  state,
+                }
+              : experience
+          ),
+          experience:
+            store.experience?.uuid === experienceUuid
+              ? {
+                  ...store.experience,
+                  state,
+                }
+              : store.experience,
+        }));
+
+        showSuccess(
+          response?.message ??
+            (state
+              ? "Experiencia activada correctamente."
+              : "Experiencia desactivada correctamente.")
+        );
+      } catch (error) {
+        console.error("Error updateMissionExperienceState:", error);
         handleApiError(error);
         throw error;
       } finally {

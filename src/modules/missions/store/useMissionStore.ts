@@ -31,7 +31,7 @@ interface MissionState {
   clearMission: () => void;
 }
 
-export const useMissionStore = create<MissionState>((set, get) => ({
+export const useMissionStore = create<MissionState>((set) => ({
   missions: [],
   mission: null,
 
@@ -46,7 +46,7 @@ export const useMissionStore = create<MissionState>((set, get) => ({
     try {
       set({ loading: true });
 
-      const { page = 1, perPage = get().perPage, search = "" } = params;
+      const { page = 1, perPage = 10, search = "" } = params;
 
       const response = await missionService.getMissions({
         page,
@@ -80,6 +80,7 @@ export const useMissionStore = create<MissionState>((set, get) => ({
 
       const missionData =
         response?.data?.mission ??
+        response?.data?.data ??
         response?.data ??
         response?.mission ??
         null;
@@ -118,6 +119,23 @@ export const useMissionStore = create<MissionState>((set, get) => ({
       const response = await missionService.updateMission(uuid, payload);
 
       showSuccess(response?.message ?? "Misión actualizada correctamente.");
+
+      const updatedMission =
+        response?.data?.mission ??
+        response?.data?.data ??
+        response?.data ??
+        response?.mission ??
+        null;
+
+      if (updatedMission) {
+        set((store) => ({
+          mission:
+            store.mission?.uuid === uuid ? updatedMission : store.mission,
+          missions: store.missions.map((mission) =>
+            mission.uuid === uuid ? updatedMission : mission
+          ),
+        }));
+      }
     } catch (error) {
       console.error("Error updateMission:", error);
       handleApiError(error);
@@ -135,12 +153,10 @@ export const useMissionStore = create<MissionState>((set, get) => ({
 
       showSuccess(response?.message ?? "Misión eliminada correctamente.");
 
-      const { currentPage, perPage } = get();
-
-      await get().fetchMissions({
-        page: currentPage,
-        perPage,
-      });
+      set((store) => ({
+        missions: store.missions.filter((mission) => mission.uuid !== uuid),
+        mission: store.mission?.uuid === uuid ? null : store.mission,
+      }));
     } catch (error) {
       console.error("Error deleteMission:", error);
       handleApiError(error);

@@ -1,9 +1,12 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
-import Image from "next/image";
 
 import { Mission, MissionPayload } from "../../types";
+
+import MissionInfoSection from "./MissionInfoSection";
+import MissionFeaturedHomeSection from "./MissionFeaturedHomeSection";
+import MissionImageSection from "./MissionImageSection";
 
 interface Props {
     initialData?: Mission | null;
@@ -11,18 +14,20 @@ interface Props {
     onSubmit: (payload: MissionPayload) => Promise<void> | void;
 }
 
-type MissionFormState = {
+export type MissionFormState = {
     name: string;
     label: string;
     country: string;
-    active: boolean;
+    featured_on_home: boolean;
+    home_order: string;
 };
 
 const initialState: MissionFormState = {
     name: "",
     label: "",
     country: "",
-    active: true,
+    featured_on_home: false,
+    home_order: "",
 };
 
 export default function MissionForm({
@@ -57,13 +62,7 @@ export default function MissionForm({
     useEffect(() => {
         if (!initialData) {
             setForm(initialState);
-            setImageFile(null);
-            setImagePreview("");
-
-            if (fileInputRef.current) {
-                fileInputRef.current.value = "";
-            }
-
+            clearSelectedImage();
             return;
         }
 
@@ -71,15 +70,19 @@ export default function MissionForm({
             name: initialData.name ?? "",
             label: initialData.label ?? "",
             country: initialData.country ?? "",
-            active: Boolean(initialData.active),
+            featured_on_home: Boolean(
+                Number(initialData.featured_on_home ?? 0)
+            ),
+            home_order:
+                initialData.home_order !== null &&
+                initialData.home_order !== undefined
+                    ? String(initialData.home_order)
+                    : "",
         });
 
-        setImageFile(null);
-        setImagePreview("");
+        clearSelectedImage();
 
-        if (fileInputRef.current) {
-            fileInputRef.current.value = "";
-        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [initialData]);
 
     useEffect(() => {
@@ -94,10 +97,20 @@ export default function MissionForm({
         field: keyof MissionFormState,
         value: string | boolean
     ) => {
-        setForm((prev) => ({
-            ...prev,
-            [field]: value,
-        }));
+        setForm((prev) => {
+            if (field === "featured_on_home" && value === false) {
+                return {
+                    ...prev,
+                    featured_on_home: false,
+                    home_order: "",
+                };
+            }
+
+            return {
+                ...prev,
+                [field]: value,
+            };
+        });
     };
 
     const handleImageChange = (
@@ -116,6 +129,10 @@ export default function MissionForm({
     };
 
     const handleRemoveSelectedImage = () => {
+        clearSelectedImage();
+    };
+
+    function clearSelectedImage() {
         if (imagePreview) {
             URL.revokeObjectURL(imagePreview);
         }
@@ -126,7 +143,7 @@ export default function MissionForm({
         if (fileInputRef.current) {
             fileInputRef.current.value = "";
         }
-    };
+    }
 
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -135,250 +152,31 @@ export default function MissionForm({
             name: form.name,
             label: form.label,
             country: form.country,
-            active: form.active,
+            featured_on_home: form.featured_on_home ? 1 : 0,
+            home_order: form.featured_on_home
+                ? Number(form.home_order)
+                : null,
             image: imageFile,
         });
     };
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-                <div>
-                    <h2 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-                        Información de la misión
-                    </h2>
+            <MissionInfoSection form={form} onChange={handleChange} />
 
-                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        Completa los datos principales de la misión.
-                    </p>
-                </div>
+            <MissionFeaturedHomeSection
+                form={form}
+                onChange={handleChange}
+            />
 
-                <div className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-2">
-                    <div>
-                        <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Nombre
-                        </label>
-
-                        <input
-                            type="text"
-                            value={form.name}
-                            onChange={(event) =>
-                                handleChange("name", event.target.value)
-                            }
-                            placeholder="Ej: Misión Marruecos 13"
-                            className="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Etiqueta
-                        </label>
-
-                        <input
-                            type="text"
-                            value={form.label}
-                            onChange={(event) =>
-                                handleChange("label", event.target.value)
-                            }
-                            placeholder="Ej: Desierto mágico"
-                            className="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            País
-                        </label>
-
-                        <input
-                            type="text"
-                            value={form.country}
-                            onChange={(event) =>
-                                handleChange("country", event.target.value)
-                            }
-                            placeholder="Ej: Marruecos"
-                            className="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-brand-500 dark:border-gray-700 dark:text-white/90"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Estado
-                        </label>
-
-                        <button
-                            type="button"
-                            onClick={() =>
-                                handleChange("active", !form.active)
-                            }
-                            className={`flex h-11 w-full items-center justify-between rounded-lg border px-4 py-2.5 text-sm font-medium transition ${
-                                form.active
-                                    ? "border-green-200 bg-green-50 text-green-700 dark:border-green-500/20 dark:bg-green-500/10 dark:text-green-400"
-                                    : "border-gray-200 bg-gray-50 text-gray-600 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300"
-                            }`}
-                        >
-                            <span>{form.active ? "Activo" : "Inactivo"}</span>
-
-                            <span
-                                className={`h-5 w-10 rounded-full p-0.5 transition ${
-                                    form.active
-                                        ? "bg-green-500"
-                                        : "bg-gray-300 dark:bg-gray-700"
-                                }`}
-                            >
-                                <span
-                                    className={`block h-4 w-4 rounded-full bg-white transition ${
-                                        form.active
-                                            ? "translate-x-5"
-                                            : "translate-x-0"
-                                    }`}
-                                />
-                            </span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-                <div>
-                    <h2 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-                        Imagen de la misión
-                    </h2>
-
-                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        Selecciona una imagen representativa para esta misión.
-                    </p>
-                </div>
-
-                <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-                    <div>
-                        <h3 className="text-sm font-semibold text-gray-800 dark:text-white/90">
-                            Imagen actual
-                        </h3>
-
-                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            Esta es la imagen guardada actualmente.
-                        </p>
-
-                        {currentImage ? (
-                            <div className="relative mt-4 h-64 overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-900">
-                                <Image
-                                    src={currentImage}
-                                    alt="Imagen actual de la misión"
-                                    fill
-                                    unoptimized
-                                    className="object-cover"
-                                />
-
-                                <div className="absolute left-3 top-3 rounded-full bg-black/60 px-3 py-1 text-xs font-medium text-white backdrop-blur">
-                                    Actual
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="mt-4 flex h-64 items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-gray-50 text-sm text-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400">
-                                No hay imagen actual.
-                            </div>
-                        )}
-                    </div>
-
-                    <div>
-                        <div className="flex items-center justify-between gap-3">
-                            <div>
-                                <h3 className="text-sm font-semibold text-gray-800 dark:text-white/90">
-                                    Nueva imagen
-                                </h3>
-
-                                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                    Puedes cargar una nueva imagen para crear o
-                                    reemplazar.
-                                </p>
-                            </div>
-
-                            {imageFile && (
-                                <button
-                                    type="button"
-                                    onClick={handleRemoveSelectedImage}
-                                    className="rounded-lg border border-gray-200 px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-800 dark:text-gray-300 dark:hover:bg-white/[0.03]"
-                                >
-                                    Quitar
-                                </button>
-                            )}
-                        </div>
-
-                        {imagePreview ? (
-                            <div className="relative mt-4 h-64 overflow-hidden rounded-2xl border border-brand-200 bg-brand-50 dark:border-brand-500/20 dark:bg-brand-500/10">
-                                <Image
-                                    src={imagePreview}
-                                    alt="Vista previa de imagen"
-                                    fill
-                                    unoptimized
-                                    className="object-cover"
-                                />
-
-                                <div className="absolute left-3 top-3 rounded-full bg-brand-500 px-3 py-1 text-xs font-medium text-white">
-                                    Nueva
-                                </div>
-                            </div>
-                        ) : (
-                            <label
-                                htmlFor="mission-image"
-                                className="mt-4 flex h-64 cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-gray-50 px-4 text-center transition hover:border-brand-500 hover:bg-brand-50/40 dark:border-gray-700 dark:bg-gray-900 dark:hover:border-brand-500 dark:hover:bg-brand-500/10"
-                            >
-                                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-gray-700 shadow-sm dark:bg-gray-800 dark:text-gray-300">
-                                    <svg
-                                        className="h-6 w-6"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                        strokeWidth={1.8}
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            d="M12 5v14M5 12h14"
-                                        />
-                                    </svg>
-                                </div>
-
-                                <p className="mt-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Click para seleccionar imagen
-                                </p>
-
-                                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                    PNG, JPG, JPEG o WEBP
-                                </p>
-                            </label>
-                        )}
-
-                        <input
-                            ref={fileInputRef}
-                            id="mission-image"
-                            type="file"
-                            accept="image/*"
-                            onChange={handleImageChange}
-                            className="hidden"
-                        />
-
-                        {imagePreview && (
-                            <button
-                                type="button"
-                                onClick={() => fileInputRef.current?.click()}
-                                className="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-800 dark:text-gray-300 dark:hover:bg-white/[0.03]"
-                            >
-                                Cambiar imagen seleccionada
-                            </button>
-                        )}
-
-                        {!imageFile && currentImage && (
-                            <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">
-                                Si no seleccionas una nueva imagen, se mantendrá
-                                la imagen actual.
-                            </p>
-                        )}
-                    </div>
-                </div>
-            </div>
+            <MissionImageSection
+                currentImage={currentImage}
+                imageFile={imageFile}
+                imagePreview={imagePreview}
+                fileInputRef={fileInputRef}
+                onImageChange={handleImageChange}
+                onRemoveSelectedImage={handleRemoveSelectedImage}
+            />
 
             <div className="flex justify-end gap-3">
                 <button

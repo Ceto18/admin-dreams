@@ -18,6 +18,18 @@ const buildMissionMomentFormData = (payload: MissionMomentPayload) => {
   formData.append("ideal", payload.ideal);
   formData.append("sensation", payload.sensation);
 
+  formData.append(
+    "featured_on_home",
+    payload.featured_on_home ? "1" : "0"
+  );
+
+  formData.append(
+    "home_order",
+    payload.home_order !== null && payload.home_order !== undefined
+      ? String(payload.home_order)
+      : ""
+  );
+
   payload.images?.slice(0, 4).forEach((image, index) => {
     if (image) {
       formData.append(`images[${index}]`, image);
@@ -64,7 +76,7 @@ export const missionMomentService = {
 
     const res = await api.post(
       `/admin/missions/${missionUuid}/experiences/${experienceUuid}/moments`,
-      formData
+      formData,
     );
 
     return res.data;
@@ -80,7 +92,7 @@ export const missionMomentService = {
 
     const res = await api.post(
       `/admin/missions/${missionUuid}/experiences/${experienceUuid}/moments/${momentUuid}`,
-      formData
+      formData,
     );
 
     return res.data;

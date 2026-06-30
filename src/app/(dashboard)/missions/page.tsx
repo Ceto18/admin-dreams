@@ -8,11 +8,10 @@ import TableToolbar from "@/shared/components/table/TableToolbar";
 import TablePagination from "@/shared/components/table/TablePagination";
 import ConfirmModal from "@/shared/components/ui/modal/ConfirmModal";
 
-import MissionForm from "@/modules/missions/components/form/MissionForm";
 import MissionTable from "@/modules/missions/components/MissionTable";
 
 import { useMissionStore } from "@/modules/missions/store/useMissionStore";
-import { Mission, MissionPayload } from "@/modules/missions/types";
+import { Mission } from "@/modules/missions/types";
 
 function TableAntLoading() {
   return (
@@ -38,15 +37,11 @@ export default function MissionsPage() {
     totalPages,
     perPage,
     fetchMissions,
-    createMission,
-    updateMission,
     deleteMission,
     toggleMissionState,
   } = useMissionStore();
 
   const [search, setSearch] = useState("");
-  const [showForm, setShowForm] = useState(false);
-  const [selectedMission, setSelectedMission] = useState<Mission | null>(null);
   const [missionToDelete, setMissionToDelete] = useState<Mission | null>(null);
 
   useEffect(() => {
@@ -90,41 +85,11 @@ export default function MissionsPage() {
   };
 
   const handleOpenCreate = () => {
-    setSelectedMission(null);
-    setShowForm(true);
+    router.push("/missions/create");
   };
 
   const handleOpenEdit = (mission: Mission) => {
-    setSelectedMission(mission);
-    setShowForm(true);
-  };
-
-  const handleCloseForm = () => {
-    if (loading) return;
-
-    setSelectedMission(null);
-    setShowForm(false);
-  };
-
-  const handleSubmit = async (payload: MissionPayload) => {
-    try {
-      if (selectedMission) {
-        await updateMission(selectedMission.uuid, payload);
-      } else {
-        await createMission(payload);
-      }
-
-      await fetchMissions({
-        page: currentPage,
-        perPage,
-        search,
-      });
-
-      setSelectedMission(null);
-      setShowForm(false);
-    } catch {
-      // El error ya se maneja en el store.
-    }
+    router.push(`/missions/${mission.uuid}/edit`);
   };
 
   const handleDelete = (mission: Mission) => {
@@ -201,47 +166,11 @@ export default function MissionsPage() {
         onPerPageChange={handlePerPageChange}
       />
 
-      {showForm && (
-        <div className="fixed inset-0 z-99999 flex items-center justify-center bg-gray-900/60 p-4">
-          <div className="max-h-[90vh] w-full max-w-5xl overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-900">
-            <div className="mb-6 flex items-start justify-between gap-4">
-              <div>
-                <h2 className="text-xl font-semibold text-gray-800 dark:text-white/90">
-                  {selectedMission ? "Editar misión" : "Crear misión"}
-                </h2>
-
-                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                  {selectedMission
-                    ? "Actualiza la información de la misión seleccionada."
-                    : "Completa la información para registrar una nueva misión."}
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={handleCloseForm}
-                disabled={loading}
-                className="rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-800 dark:text-gray-300 dark:hover:bg-white/[0.03]"
-              >
-                Cerrar
-              </button>
-            </div>
-
-            <MissionForm
-              initialData={selectedMission}
-              loading={loading}
-              onSubmit={handleSubmit}
-            />
-          </div>
-        </div>
-      )}
-
       <ConfirmModal
         open={Boolean(missionToDelete)}
         title="Eliminar misión"
-        message={`¿Seguro que deseas eliminar la misión "${
-          missionToDelete?.name ?? ""
-        }"? Esta acción no se puede deshacer.`}
+        message={`¿Seguro que deseas eliminar la misión "${missionToDelete?.name ?? ""
+          }"? Esta acción no se puede deshacer.`}
         confirmText="Eliminar"
         cancelText="Cancelar"
         loading={loading}

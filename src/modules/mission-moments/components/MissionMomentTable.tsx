@@ -71,24 +71,6 @@ export default function MissionMomentTable({
       ),
     },
     {
-      key: "ideal",
-      header: "Ideal",
-      render: (moment) => (
-        <Badge size="sm" color="info">
-          {moment.ideal || "-"}
-        </Badge>
-      ),
-    },
-    {
-      key: "sensation",
-      header: "Sensación",
-      render: (moment) => (
-        <Badge size="sm" color="warning">
-          {moment.sensation || "-"}
-        </Badge>
-      ),
-    },
-    {
       key: "images",
       header: "Imágenes",
       render: (moment) => (

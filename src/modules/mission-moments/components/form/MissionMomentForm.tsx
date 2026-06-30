@@ -9,7 +9,9 @@ import { MissionMoment, MissionMomentPayload } from "../../types";
 import MissionMomentInfoSection from "./MissionMomentInfoSection";
 import MissionMomentImagesSection from "./MissionMomentImagesSection";
 
+
 import { MissionMomentFormState, MomentField } from "./types";
+import MissionMomentFeaturedHomeSection from "./MissionMomentFeaturedHomeSection";
 
 interface Props {
   initialData?: MissionMoment | null;
@@ -27,6 +29,8 @@ const initialState: MissionMomentFormState = {
   experience: "",
   ideal: "",
   sensation: "",
+  featured_on_home: false,
+  home_order: "",
 };
 
 const MAX_IMAGES = 4;
@@ -60,14 +64,12 @@ const momentFields: MomentField[] = [
   {
     name: "description",
     label: "Descripción",
-    placeholder:
-      "Ej: Un instante entre dunas, silencio y cielo dorado...",
+    placeholder: "Ej: Un instante entre dunas, silencio y cielo dorado...",
   },
   {
     name: "proverb",
     label: "Proverbio",
-    placeholder:
-      "Ej: Permite que el silencio del desierto toque tu alma...",
+    placeholder: "Ej: Permite que el silencio del desierto toque tu alma...",
   },
 ];
 
@@ -103,6 +105,14 @@ export default function MissionMomentForm({
       experience: initialData.experience ?? "",
       ideal: initialData.ideal ?? "",
       sensation: initialData.sensation ?? "",
+      featured_on_home: Boolean(
+        Number(initialData.featured_on_home ?? 0)
+      ),
+      home_order:
+        initialData.home_order !== null &&
+        initialData.home_order !== undefined
+          ? String(initialData.home_order)
+          : "",
     });
 
     clearSelectedImages();
@@ -118,12 +128,22 @@ export default function MissionMomentForm({
 
   const handleChange = (
     field: keyof MissionMomentFormState,
-    value: string
+    value: string | boolean
   ) => {
-    setForm((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setForm((prev) => {
+      if (field === "featured_on_home" && value === false) {
+        return {
+          ...prev,
+          featured_on_home: false,
+          home_order: "",
+        };
+      }
+
+      return {
+        ...prev,
+        [field]: value,
+      };
+    });
   };
 
   const handleImagesChange = (
@@ -221,6 +241,8 @@ export default function MissionMomentForm({
       experience: form.experience.trim(),
       ideal: form.ideal.trim(),
       sensation: form.sensation.trim(),
+      featured_on_home: form.featured_on_home ? 1 : 0,
+      home_order: form.featured_on_home ? Number(form.home_order) : null,
       images: imageFiles.slice(0, MAX_IMAGES),
     });
   };
@@ -230,6 +252,11 @@ export default function MissionMomentForm({
       <MissionMomentInfoSection
         form={form}
         fields={momentFields}
+        onChange={handleChange}
+      />
+
+      <MissionMomentFeaturedHomeSection
+        form={form}
         onChange={handleChange}
       />
 

@@ -27,6 +27,10 @@ export interface MissionMoment {
   ideal: string;
   sensation: string;
   slug: string;
+
+  featured_on_home?: boolean | number | string;
+  home_order?: number | null;
+
   mission: MissionMomentMission;
   mission_experience: MissionMomentExperience;
   images: MissionMomentImage[];
@@ -40,6 +44,9 @@ export interface MissionMomentPayload {
   experience: string;
   ideal: string;
   sensation: string;
+
+  featured_on_home: boolean | number;
+  home_order: number | null;
 
   /**
    * Para creación/edición con imágenes.

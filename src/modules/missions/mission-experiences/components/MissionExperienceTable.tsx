@@ -14,6 +14,7 @@ interface Props {
   onView?: (experience: MissionExperience) => void;
   onEdit?: (experience: MissionExperience) => void;
   onDelete?: (experience: MissionExperience) => void;
+  onChangeState?: (experience: MissionExperience, state: boolean) => void;
 
   showView?: boolean;
   showEdit?: boolean;
@@ -26,6 +27,7 @@ export default function MissionExperienceTable({
   onView,
   onEdit,
   onDelete,
+  onChangeState,
   showView = false,
   showEdit = true,
   showDelete = true,
@@ -97,6 +99,36 @@ export default function MissionExperienceTable({
         </span>
       ),
     },
+    {
+      key: "state",
+      header: "Estado",
+      render: (experience) => {
+        const isActive = Boolean(experience.state);
+
+        return (
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => onChangeState?.(experience, !isActive)}
+              disabled={!onChangeState}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${isActive ? "bg-green-500" : "bg-gray-300 dark:bg-gray-700"
+                } ${!onChangeState
+                  ? "cursor-not-allowed opacity-60"
+                  : "cursor-pointer"
+                }`}
+              aria-label={
+                isActive ? "Desactivar experiencia" : "Activar experiencia"
+              }
+            >
+              <span
+                className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform duration-200 ${isActive ? "translate-x-5" : "translate-x-1"
+                  }`}
+              />
+            </button>
+          </div>
+        );
+      },
+    },
   ];
 
   return (
@@ -106,7 +138,7 @@ export default function MissionExperienceTable({
       loading={loading}
       emptyMessage="No hay experiencias registradas."
       getRowKey={(experience) => experience.uuid}
-      //onView={onView}
+      // onView={onView}
       onEdit={onEdit}
       onDelete={onDelete}
       showView={showView}
@@ -129,7 +161,7 @@ function formatDate(date?: string) {
 function formatMoney(value?: string | number) {
   if (value === undefined || value === null || value === "") return "-";
 
-  return `S/ ${Number(value).toLocaleString("es-PE", {
+  return `€ ${Number(value).toLocaleString("es-ES", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;

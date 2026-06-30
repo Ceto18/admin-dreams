@@ -6,10 +6,22 @@ export type MissionMomentFormState = {
   experience: string;
   ideal: string;
   sensation: string;
+
+  featured_on_home: boolean;
+  home_order: string;
 };
 
+export type MissionMomentTextField =
+  | "title"
+  | "description"
+  | "proverb"
+  | "place"
+  | "experience"
+  | "ideal"
+  | "sensation";
+
 export type MomentField = {
-  name: keyof MissionMomentFormState;
+  name: MissionMomentTextField;
   label: string;
   placeholder?: string;
   type?: string;
