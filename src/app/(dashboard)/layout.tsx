@@ -1,4 +1,5 @@
 // src/app/(dashboard)/layout.tsx
+
 "use client";
 
 import { useAuthStore } from "@/store/useAuthStore";
@@ -21,8 +22,8 @@ function DashboardContent({
   const mainContentMargin = isMobileOpen
     ? "ml-0"
     : isExpanded || isHovered
-    ? "lg:ml-[290px]"
-    : "lg:ml-[90px]";
+      ? "lg:ml-[290px]"
+      : "lg:ml-[90px]";
 
   return (
     <div className="min-h-screen xl:flex">
@@ -47,16 +48,26 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const token = useAuthStore((s) => s.token);
+  const token = useAuthStore((state) => state.token);
+  const hasHydrated = useAuthStore((state) => state.hasHydrated);
+
   const router = useRouter();
 
   useEffect(() => {
+    if (!hasHydrated) return;
+
     if (!token) {
       router.replace("/signin");
     }
-  }, [token, router]);
+  }, [hasHydrated, token, router]);
 
-  if (!token) return null;
+  if (!hasHydrated) {
+    return null;
+  }
+
+  if (!token) {
+    return null;
+  }
 
   return (
     <SidebarProvider>

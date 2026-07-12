@@ -1,9 +1,13 @@
 "use client";
 
+import { useState } from "react";
+
 import Badge from "@/shared/components/ui/badge/Badge";
 import DataTable, {
   DataTableColumn,
 } from "@/shared/components/table/DataTable";
+
+import Switch from "@/shared/components/form/switch/Switch";
 
 import { MissionExperience } from "../types";
 
@@ -14,7 +18,10 @@ interface Props {
   onView?: (experience: MissionExperience) => void;
   onEdit?: (experience: MissionExperience) => void;
   onDelete?: (experience: MissionExperience) => void;
-  onChangeState?: (experience: MissionExperience, state: boolean) => void;
+  onChangeState?: (
+    experience: MissionExperience,
+    state: boolean
+  ) => Promise<void> | void;
 
   showView?: boolean;
   showEdit?: boolean;
@@ -32,6 +39,25 @@ export default function MissionExperienceTable({
   showEdit = true,
   showDelete = true,
 }: Props) {
+  const [updatingExperienceUuid, setUpdatingExperienceUuid] = useState<
+    string | null
+  >(null);
+
+  const handleChangeState = async (
+    experience: MissionExperience,
+    state: boolean
+  ) => {
+    if (!onChangeState) return;
+
+    try {
+      setUpdatingExperienceUuid(experience.uuid);
+
+      await onChangeState(experience, state);
+    } finally {
+      setUpdatingExperienceUuid(null);
+    }
+  };
+
   const columns: DataTableColumn<MissionExperience>[] = [
     {
       key: "name",
@@ -100,35 +126,30 @@ export default function MissionExperienceTable({
       ),
     },
     {
-      key: "state",
+      key: "active",
       header: "Estado",
       render: (experience) => {
-        const isActive = Boolean(experience.state);
+        const isUpdating = updatingExperienceUuid === experience.uuid;
 
         return (
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => onChangeState?.(experience, !isActive)}
-              disabled={!onChangeState}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${isActive ? "bg-green-500" : "bg-gray-300 dark:bg-gray-700"
-                } ${!onChangeState
-                  ? "cursor-not-allowed opacity-60"
-                  : "cursor-pointer"
-                }`}
-              aria-label={
-                isActive ? "Desactivar experiencia" : "Activar experiencia"
+          <div className="flex items-center gap-2">
+            <Switch
+              key={`${experience.uuid}-${String(experience.active)}`}
+              label=""
+              defaultChecked={Boolean(experience.active)}
+              disabled={
+                !onChangeState ||
+                (updatingExperienceUuid !== null &&
+                  updatingExperienceUuid !== experience.uuid)
               }
-            >
-              <span
-                className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform duration-200 ${isActive ? "translate-x-5" : "translate-x-1"
-                  }`}
-              />
-            </button>
+              onChange={(checked: boolean) =>
+                handleChangeState(experience, checked)
+              }
+            />
           </div>
         );
       },
-    },
+    }
   ];
 
   return (
@@ -138,7 +159,7 @@ export default function MissionExperienceTable({
       loading={loading}
       emptyMessage="No hay experiencias registradas."
       getRowKey={(experience) => experience.uuid}
-      // onView={onView}
+      onView={onView}
       onEdit={onEdit}
       onDelete={onDelete}
       showView={showView}

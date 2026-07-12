@@ -61,11 +61,11 @@ const navItems: NavItem[] = [
       },
     ],
   },
-  // {
-  //   icon: <Building2Icon />,
-  //   name: "Organizaciones",
-  //   path: "/organizations",
-  // },
+  {
+    icon: <Building2Icon />,
+    name: "Colaboradores",
+    path: "/collaborators",
+  },
   // {
   //   icon: <WalletIcon />,
   //   name: "Tarjetas de presentación",

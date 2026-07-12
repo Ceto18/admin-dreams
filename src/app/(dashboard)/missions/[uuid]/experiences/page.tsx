@@ -64,6 +64,8 @@ export default function MissionExperiencesPage() {
   };
 
   const handleSearchSubmit = () => {
+    if (!missionUuid) return;
+
     fetchMissionExperiences({
       missionUuid,
       page: 1,
@@ -73,6 +75,8 @@ export default function MissionExperiencesPage() {
   };
 
   const handlePageChange = (page: number) => {
+    if (!missionUuid) return;
+
     fetchMissionExperiences({
       missionUuid,
       page,
@@ -82,6 +86,8 @@ export default function MissionExperiencesPage() {
   };
 
   const handlePerPageChange = (newPerPage: number) => {
+    if (!missionUuid) return;
+
     fetchMissionExperiences({
       missionUuid,
       page: 1,
@@ -110,6 +116,8 @@ export default function MissionExperiencesPage() {
     experience: MissionExperience,
     state: boolean
   ) => {
+    if (!missionUuid || !experience.uuid) return;
+
     try {
       await updateMissionExperienceState(missionUuid, experience.uuid, state);
     } catch {
@@ -118,7 +126,7 @@ export default function MissionExperiencesPage() {
   };
 
   const handleConfirmDelete = async () => {
-    if (!experienceToDelete) return;
+    if (!experienceToDelete || !missionUuid) return;
 
     try {
       await deleteMissionExperience(missionUuid, experienceToDelete.uuid);

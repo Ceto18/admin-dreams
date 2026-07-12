@@ -1,10 +1,7 @@
 import { create } from "zustand";
 
 import { missionExperienceService } from "../services/missionExperienceService";
-import {
-  MissionExperience,
-  MissionExperiencePayload,
-} from "../types";
+import { MissionExperience, MissionExperiencePayload } from "../types";
 
 import { showSuccess } from "@/shared/utils/toast";
 import { handleApiError } from "@/shared/utils/handleApiError";
@@ -20,6 +17,7 @@ interface MissionExperienceState {
   experiences: MissionExperience[];
   experience: MissionExperience | null;
   loading: boolean;
+  updatingStateUuid: string | null;
 
   currentPage: number;
   totalPages: number;
@@ -36,7 +34,7 @@ interface MissionExperienceState {
 
   fetchMissionExperience: (
     missionUuid: string,
-    expeuuid: string
+    experienceUuid: string
   ) => Promise<void>;
 
   createMissionExperience: (
@@ -46,7 +44,7 @@ interface MissionExperienceState {
 
   updateMissionExperience: (
     missionUuid: string,
-    expeuuid: string,
+    experienceUuid: string,
     payload: MissionExperiencePayload
   ) => Promise<void>;
 
@@ -58,12 +56,12 @@ interface MissionExperienceState {
 
   deleteMissionExperience: (
     missionUuid: string,
-    expeuuid: string
+    experienceUuid: string
   ) => Promise<void>;
 
   deleteMissionExperienceImage: (
     missionUuid: string,
-    expeuuid: string,
+    experienceUuid: string,
     imageUuid: string
   ) => Promise<void>;
 
@@ -75,6 +73,7 @@ export const useMissionExperienceStore = create<MissionExperienceState>(
     experiences: [],
     experience: null,
     loading: false,
+    updatingStateUuid: null,
 
     currentPage: 1,
     totalPages: 1,
@@ -149,15 +148,14 @@ export const useMissionExperienceStore = create<MissionExperienceState>(
       }
     },
 
-    fetchMissionExperience: async (missionUuid, expeuuid) => {
+    fetchMissionExperience: async (missionUuid, experienceUuid) => {
       try {
         set({ loading: true, experience: null });
 
-        const response =
-          await missionExperienceService.getMissionExperience(
-            missionUuid,
-            expeuuid
-          );
+        const response = await missionExperienceService.getMissionExperience(
+          missionUuid,
+          experienceUuid
+        );
 
         set({
           experience: response?.data ?? null,
@@ -174,11 +172,10 @@ export const useMissionExperienceStore = create<MissionExperienceState>(
       try {
         set({ loading: true });
 
-        const response =
-          await missionExperienceService.createMissionExperience(
-            missionUuid,
-            payload
-          );
+        const response = await missionExperienceService.createMissionExperience(
+          missionUuid,
+          payload
+        );
 
         showSuccess(response?.message ?? "Experiencia creada correctamente.");
       } catch (error) {
@@ -190,16 +187,15 @@ export const useMissionExperienceStore = create<MissionExperienceState>(
       }
     },
 
-    updateMissionExperience: async (missionUuid, expeuuid, payload) => {
+    updateMissionExperience: async (missionUuid, experienceUuid, payload) => {
       try {
         set({ loading: true });
 
-        const response =
-          await missionExperienceService.updateMissionExperience(
-            missionUuid,
-            expeuuid,
-            payload
-          );
+        const response = await missionExperienceService.updateMissionExperience(
+          missionUuid,
+          experienceUuid,
+          payload
+        );
 
         showSuccess(
           response?.message ?? "Experiencia actualizada correctamente."
@@ -218,16 +214,18 @@ export const useMissionExperienceStore = create<MissionExperienceState>(
       experienceUuid,
       state
     ) => {
+      const previousExperiences = get().experiences;
+      const previousExperience = get().experience;
+
       try {
-        set({ loading: true });
+        set({
+          updatingStateUuid: experienceUuid,
+        });
 
-        const response =
-          await missionExperienceService.updateMissionExperienceState(
-            missionUuid,
-            experienceUuid,
-            { state }
-          );
-
+        /*
+          Actualización visual inmediata.
+          Si el backend falla, se revierte en el catch.
+        */
         set((store) => ({
           experiences: store.experiences.map((experience) =>
             experience.uuid === experienceUuid
@@ -246,6 +244,15 @@ export const useMissionExperienceStore = create<MissionExperienceState>(
               : store.experience,
         }));
 
+        const response =
+          await missionExperienceService.updateMissionExperienceState(
+            missionUuid,
+            experienceUuid,
+            {
+              state,
+            }
+          );
+
         showSuccess(
           response?.message ??
             (state
@@ -254,22 +261,32 @@ export const useMissionExperienceStore = create<MissionExperienceState>(
         );
       } catch (error) {
         console.error("Error updateMissionExperienceState:", error);
+
+        /*
+          Si falla el API, regresamos al estado anterior.
+        */
+        set({
+          experiences: previousExperiences,
+          experience: previousExperience,
+        });
+
         handleApiError(error);
         throw error;
       } finally {
-        set({ loading: false });
+        set({
+          updatingStateUuid: null,
+        });
       }
     },
 
-    deleteMissionExperience: async (missionUuid, expeuuid) => {
+    deleteMissionExperience: async (missionUuid, experienceUuid) => {
       try {
         set({ loading: true });
 
-        const response =
-          await missionExperienceService.deleteMissionExperience(
-            missionUuid,
-            expeuuid
-          );
+        const response = await missionExperienceService.deleteMissionExperience(
+          missionUuid,
+          experienceUuid
+        );
 
         showSuccess(response?.message ?? "Experiencia eliminada correctamente.");
       } catch (error) {
@@ -281,12 +298,16 @@ export const useMissionExperienceStore = create<MissionExperienceState>(
       }
     },
 
-    deleteMissionExperienceImage: async (missionUuid, expeuuid, imageUuid) => {
+    deleteMissionExperienceImage: async (
+      missionUuid,
+      experienceUuid,
+      imageUuid
+    ) => {
       try {
         const response =
           await missionExperienceService.deleteMissionExperienceImage(
             missionUuid,
-            expeuuid,
+            experienceUuid,
             imageUuid
           );
 

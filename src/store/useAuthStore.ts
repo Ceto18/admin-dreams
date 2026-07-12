@@ -1,12 +1,23 @@
 // src/store/useAuthStore.ts
+"use client";
+
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-interface AuthState {
-  user: any;
-  token: string | null;
+type AuthUser = {
+  uuid: string;
+  name: string;
+  last_name?: string;
+  email: string;
+};
 
-  setAuth: (data: { user: any; token: string }) => void;
+interface AuthState {
+  user: AuthUser | null;
+  token: string | null;
+  hasHydrated: boolean;
+
+  setAuth: (data: { user: AuthUser; token: string }) => void;
+  setHasHydrated: (value: boolean) => void;
   logout: () => void;
 }
 
@@ -15,11 +26,18 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       user: null,
       token: null,
+      hasHydrated: false,
 
       setAuth: ({ user, token }) => {
         set({
           user,
           token,
+        });
+      },
+
+      setHasHydrated: (value) => {
+        set({
+          hasHydrated: value,
         });
       },
 
@@ -31,13 +49,18 @@ export const useAuthStore = create<AuthState>()(
 
         if (typeof window !== "undefined") {
           localStorage.removeItem("auth-storage");
-
-          window.location.href = "/signin";
+          window.location.replace("/signin");
         }
       },
     }),
     {
       name: "auth-storage",
+
+      onRehydrateStorage: () => {
+        return (state) => {
+          state?.setHasHydrated(true);
+        };
+      },
     }
   )
 );

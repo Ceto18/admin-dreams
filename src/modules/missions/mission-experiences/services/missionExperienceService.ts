@@ -70,9 +70,9 @@ export const missionExperienceService = {
     return res.data;
   },
 
-  getMissionExperience: async (missionUuid: string, expeuuid: string) => {
+  getMissionExperience: async (missionUuid: string, experienceUuid: string) => {
     const res = await api.get(
-      `/admin/missions/${missionUuid}/experiences/${expeuuid}`
+      `/admin/missions/${missionUuid}/experiences/${experienceUuid}`
     );
 
     return res.data;
@@ -94,22 +94,25 @@ export const missionExperienceService = {
 
   updateMissionExperience: async (
     missionUuid: string,
-    expeuuid: string,
+    experienceUuid: string,
     payload: MissionExperiencePayload
   ) => {
     const formData = buildMissionExperienceFormData(payload);
 
     const res = await api.post(
-      `/admin/missions/${missionUuid}/experiences/${expeuuid}`,
+      `/admin/missions/${missionUuid}/experiences/${experienceUuid}`,
       formData
     );
 
     return res.data;
   },
 
-  deleteMissionExperience: async (missionUuid: string, expeuuid: string) => {
+  deleteMissionExperience: async (
+    missionUuid: string,
+    experienceUuid: string
+  ) => {
     const res = await api.delete(
-      `/admin/missions/${missionUuid}/experiences/${expeuuid}`
+      `/admin/missions/${missionUuid}/experiences/${experienceUuid}`
     );
 
     return res.data;
@@ -117,11 +120,11 @@ export const missionExperienceService = {
 
   deleteMissionExperienceImage: async (
     missionUuid: string,
-    expeuuid: string,
+    experienceUuid: string,
     imageUuid: string
   ) => {
     const res = await api.delete(
-      `/admin/missions/${missionUuid}/experiences/${expeuuid}/images/${imageUuid}`
+      `/admin/missions/${missionUuid}/experiences/${experienceUuid}/images/${imageUuid}`
     );
 
     return res.data;

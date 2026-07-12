@@ -39,11 +39,20 @@ export type MissionExperience = {
   subtitle: string;
   long_description: string;
   investment: string | number;
-  state?: boolean;
+
+  // El backend en la tabla devuelve "active"
+  active?: boolean | number | string;
+
+  // Lo puedes mantener si otra respuesta del backend lo usa
+  state?: boolean | number | string;
+
   file?: string | null;
+  file_url?: string | null;
+
   images?: MissionExperienceImage[];
   features?: MissionExperienceFeature[];
   itineraries?: MissionExperienceItinerary[];
+
   created_at?: string;
   updated_at?: string;
 };
