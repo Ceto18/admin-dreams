@@ -137,11 +137,6 @@ export default function MissionExperienceTable({
               key={`${experience.uuid}-${String(experience.active)}`}
               label=""
               defaultChecked={Boolean(experience.active)}
-              disabled={
-                !onChangeState ||
-                (updatingExperienceUuid !== null &&
-                  updatingExperienceUuid !== experience.uuid)
-              }
               onChange={(checked: boolean) =>
                 handleChangeState(experience, checked)
               }

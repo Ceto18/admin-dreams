@@ -1,3 +1,8 @@
+export type MissionExperienceDifficulty =
+  | "basic"
+  | "intermediate"
+  | "advanced";
+
 export type MissionExperienceImage = {
   uuid: string;
   name: string;
@@ -36,6 +41,7 @@ export type MissionExperience = {
   days: number;
   nights: number;
   raiting: string | number;
+  difficulty: MissionExperienceDifficulty;
   subtitle: string;
   long_description: string;
   investment: string | number;
@@ -66,6 +72,7 @@ export type MissionExperiencePayload = {
   days: string | number;
   nights: string | number;
   raiting: string | number;
+  difficulty: MissionExperienceDifficulty;
   subtitle: string;
   long_description: string;
   investment: string | number;

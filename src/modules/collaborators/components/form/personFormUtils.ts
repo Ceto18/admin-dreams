@@ -3,25 +3,33 @@
 import type {
   Person,
   PersonImage,
-  PersonMissionPayload,
+  PersonMissionRole,
 } from "../../types";
 
-export const ROLE_OPTIONS = [
+export type PersonMissionFormState = {
+  mission_uuid: string;
+  role: PersonMissionRole | "";
+};
+
+export const ROLE_OPTIONS: Array<{
+  value: PersonMissionRole;
+  label: string;
+}> = [
   {
     value: "influencer",
-    label: "Influencers",
+    label: "Influencer",
   },
   {
-    value: "coordinador",
-    label: "Coordinadores",
+    value: "coordinator",
+    label: "Coordinador",
   },
   {
-    value: "colaborador",
-    label: "Colaboradores",
+    value: "contributor",
+    label: "Colaborador",
   },
 ];
 
-export function getInitialLanguageUuids(person: Person) {
+export function getInitialLanguageUuids(person: Person): string[] {
   const languages = person.languages ?? [];
 
   return languages
@@ -32,16 +40,18 @@ export function getInitialLanguageUuids(person: Person) {
 
       return language.uuid;
     })
-    .filter(Boolean);
+    .filter((uuid): uuid is string => Boolean(uuid));
 }
 
-export function getInitialMissions(person: Person): PersonMissionPayload[] {
+export function getInitialMissions(
+  person: Person
+): PersonMissionFormState[] {
   const missionPeople = person.mission_people ?? [];
 
   if (missionPeople.length > 0) {
     return missionPeople.map((missionPerson) => ({
       mission_uuid: missionPerson.mission?.uuid ?? "",
-      role: missionPerson.role ?? "",
+      role: normalizePersonMissionRole(missionPerson.role),
     }));
   }
 
@@ -63,11 +73,16 @@ export function getInitialMissions(person: Person): PersonMissionPayload[] {
       mission.pivot?.mission_uuid ??
       mission.uuid ??
       "",
-    role: mission.role ?? mission.pivot?.role ?? "",
+
+    role: normalizePersonMissionRole(
+      mission.role ?? mission.pivot?.role
+    ),
   }));
 }
 
-export function getPersonGalleryImageUrl(image: string | PersonImage) {
+export function getPersonGalleryImageUrl(
+  image: string | PersonImage
+) {
   if (typeof image === "string") {
     return image;
   }
@@ -75,8 +90,12 @@ export function getPersonGalleryImageUrl(image: string | PersonImage) {
   return image.image_url || image.url || image.path || "";
 }
 
-export function getCurrentPersonPhoto(person: Person | null) {
-  if (!person) return "";
+export function getCurrentPersonPhoto(
+  person: Person | null
+) {
+  if (!person) {
+    return "";
+  }
 
   if (typeof person.photo_perfil === "string") {
     return person.photo_perfil;
@@ -103,4 +122,38 @@ export function getCurrentPersonPhoto(person: Person | null) {
   }
 
   return "";
+}
+
+export function isPersonMissionRole(
+  value: unknown
+): value is PersonMissionRole {
+  return (
+    value === "influencer" ||
+    value === "coordinator" ||
+    value === "contributor"
+  );
+}
+
+function normalizePersonMissionRole(
+  role: string | null | undefined
+): PersonMissionRole | "" {
+  if (!role) {
+    return "";
+  }
+
+  const normalizedRole = role.toLowerCase().trim();
+
+  const legacyRoles: Record<string, PersonMissionRole> = {
+    influencer: "influencer",
+
+    coordinator: "coordinator",
+    coordinador: "coordinator",
+    coordinadores: "coordinator",
+
+    contributor: "contributor",
+    colaborador: "contributor",
+    colaboradores: "contributor",
+  };
+
+  return legacyRoles[normalizedRole] ?? "";
 }

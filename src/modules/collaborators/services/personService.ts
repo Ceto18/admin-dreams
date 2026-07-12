@@ -1,12 +1,15 @@
 // src/modules/people/services/personService.ts
 
 import { api } from "@/services/api";
+
 import type {
   PersonPayload,
   GetPeopleParams,
   GetLanguagesParams,
   LanguagesResponse,
   DeletePersonImageResponse,
+  UpdatePersonStatePayload,
+  UpdatePersonStateResponse,
 } from "../types";
 
 const buildPersonFormData = (payload: PersonPayload) => {
@@ -23,8 +26,15 @@ const buildPersonFormData = (payload: PersonPayload) => {
   }
 
   payload.missions.forEach((mission, index) => {
-    formData.append(`missions[${index}][mission_uuid]`, mission.mission_uuid);
-    formData.append(`missions[${index}][role]`, mission.role);
+    formData.append(
+      `missions[${index}][mission_uuid]`,
+      mission.mission_uuid
+    );
+
+    formData.append(
+      `missions[${index}][role]`,
+      mission.role
+    );
   });
 
   payload.images?.forEach((image, index) => {
@@ -34,14 +44,19 @@ const buildPersonFormData = (payload: PersonPayload) => {
   });
 
   payload.languages?.forEach((languageUuid, index) => {
-    formData.append(`languages[${index}]`, languageUuid);
+    formData.append(
+      `languages[${index}]`,
+      languageUuid
+    );
   });
 
   return formData;
 };
 
 export const personService = {
-  getPeople: async (params: GetPeopleParams = {}) => {
+  getPeople: async (
+    params: GetPeopleParams = {}
+  ) => {
     const res = await api.get("/admin/people", {
       params,
     });
@@ -50,37 +65,56 @@ export const personService = {
   },
 
   getPerson: async (uuid: string) => {
-    const res = await api.get(`/admin/people/${uuid}`);
+    const res = await api.get(
+      `/admin/people/${uuid}`
+    );
 
     return res.data;
   },
 
-  createPerson: async (payload: PersonPayload) => {
-    const formData = buildPersonFormData(payload);
+  createPerson: async (
+    payload: PersonPayload
+  ) => {
+    const formData =
+      buildPersonFormData(payload);
 
-    const res = await api.post("/admin/people", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+    const res = await api.post(
+      "/admin/people",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
 
     return res.data;
   },
 
-  updatePerson: async (uuid: string, payload: PersonPayload) => {
-    const formData = buildPersonFormData(payload);
+  updatePerson: async (
+    uuid: string,
+    payload: PersonPayload
+  ) => {
+    const formData =
+      buildPersonFormData(payload);
 
-    const res = await api.post(`/admin/people/${uuid}`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+    const res = await api.post(
+      `/admin/people/${uuid}`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
 
     return res.data;
   },
 
   deletePerson: async (uuid: string) => {
-    const res = await api.delete(`/admin/people/${uuid}`);
+    const res = await api.delete(
+      `/admin/people/${uuid}`
+    );
 
     return res.data;
   },
@@ -96,10 +130,14 @@ export const personService = {
     return res.data;
   },
 
-  togglePersonState: async (uuid: string, state: boolean) => {
-    const res = await api.put(`/admin/people/state/${uuid}`, {
-      state,
-    });
+  updatePersonState: async (
+    personUuid: string,
+    payload: UpdatePersonStatePayload
+  ): Promise<UpdatePersonStateResponse> => {
+    const res = await api.put(
+      `/admin/people/${personUuid}/state`,
+      payload
+    );
 
     return res.data;
   },
@@ -107,9 +145,12 @@ export const personService = {
   getLanguages: async (
     params: GetLanguagesParams = {}
   ): Promise<LanguagesResponse> => {
-    const res = await api.get("/admin/languages", {
-      params,
-    });
+    const res = await api.get(
+      "/admin/languages",
+      {
+        params,
+      }
+    );
 
     return res.data;
   },

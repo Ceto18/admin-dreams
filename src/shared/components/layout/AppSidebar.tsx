@@ -66,11 +66,11 @@ const navItems: NavItem[] = [
     name: "Colaboradores",
     path: "/collaborators",
   },
-  // {
-  //   icon: <WalletIcon />,
-  //   name: "Tarjetas de presentación",
-  //   path: "/cards",
-  // },
+  {
+    icon: <WalletIcon />,
+    name: "Reseñas",
+    path: "/reviews",
+  },
   // {
   //   icon: <CreditCardIcon />,
   //   name: "Planes",

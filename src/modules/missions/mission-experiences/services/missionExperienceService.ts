@@ -21,6 +21,7 @@ const buildMissionExperienceFormData = (payload: MissionExperiencePayload) => {
   formData.append("days", String(payload.days));
   formData.append("nights", String(payload.nights));
   formData.append("raiting", String(payload.raiting));
+  formData.append("difficulty", payload.difficulty);
   formData.append("subtitle", payload.subtitle);
   formData.append("long_description", payload.long_description);
   formData.append("investment", String(payload.investment));

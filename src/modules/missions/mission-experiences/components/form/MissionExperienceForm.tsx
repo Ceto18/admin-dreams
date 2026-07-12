@@ -1,10 +1,18 @@
 "use client";
 
-import { FormEvent, useEffect, useRef, useState } from "react";
+import {
+  FormEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 import Button from "@/shared/components/ui/button/Button";
 
-import { MissionExperience, MissionExperiencePayload } from "../../types";
+import {
+  MissionExperience,
+  MissionExperiencePayload,
+} from "../../types";
 
 import MissionExperienceInfoSection from "./MissionExperienceInfoSection";
 import MissionExperienceFeaturesSection from "./MissionExperienceFeaturesSection";
@@ -22,8 +30,12 @@ interface Props {
   initialData?: MissionExperience | null;
   loading?: boolean;
   imageDeletingUuid?: string | null;
-  onSubmit: (payload: MissionExperiencePayload) => Promise<void> | void;
-  onDeleteCurrentImage?: (imageUuid: string) => Promise<void> | void;
+  onSubmit: (
+    payload: MissionExperiencePayload
+  ) => Promise<void> | void;
+  onDeleteCurrentImage?: (
+    imageUuid: string
+  ) => Promise<void> | void;
 }
 
 const initialState: MissionExperienceFormState = {
@@ -35,6 +47,7 @@ const initialState: MissionExperienceFormState = {
   days: "",
   nights: "",
   raiting: "",
+  difficulty: "basic",
   subtitle: "",
   long_description: "",
   investment: "",
@@ -102,6 +115,25 @@ const experienceFields: ExperienceField[] = [
     placeholder: "Ej: 4.6",
   },
   {
+    name: "difficulty",
+    label: "Dificultad",
+    type: "select",
+    options: [
+      {
+        value: "basic",
+        label: "Básica",
+      },
+      {
+        value: "intermediate",
+        label: "Intermedia",
+      },
+      {
+        value: "advanced",
+        label: "Avanzada",
+      },
+    ],
+  },
+  {
     name: "investment",
     label: "Inversión",
     type: "number",
@@ -116,21 +148,53 @@ export default function MissionExperienceForm({
   onSubmit,
   onDeleteCurrentImage,
 }: Props) {
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const documentInputRef = useRef<HTMLInputElement | null>(null);
+  const fileInputRef =
+    useRef<HTMLInputElement | null>(null);
 
-  const [form, setForm] = useState<MissionExperienceFormState>(initialState);
-  const [imageFiles, setImageFiles] = useState<File[]>([]);
-  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
-  const [documentFile, setDocumentFile] = useState<File | null>(null);
-  const [features, setFeatures] = useState<string[]>([""]);
-  const [itineraries, setItineraries] = useState<ItineraryFormState[]>([
-    initialItinerary,
-  ]);
+  const documentInputRef =
+    useRef<HTMLInputElement | null>(null);
+
+  const [form, setForm] =
+    useState<MissionExperienceFormState>(initialState);
+
+  const [imageFiles, setImageFiles] =
+    useState<File[]>([]);
+
+  const [imagePreviews, setImagePreviews] =
+    useState<string[]>([]);
+
+  const [documentFile, setDocumentFile] =
+    useState<File | null>(null);
+
+  const [features, setFeatures] =
+    useState<string[]>([""]);
+
+  const [itineraries, setItineraries] = useState<
+    ItineraryFormState[]
+  >([initialItinerary]);
 
   const currentImages = initialData?.images ?? [];
-  const totalImagesCount = currentImages.length + imageFiles.length;
-  const availableImageSlots = Math.max(MAX_IMAGES - totalImagesCount, 0);
+
+  const totalImagesCount =
+    currentImages.length + imageFiles.length;
+
+  const availableImageSlots = Math.max(
+    MAX_IMAGES - totalImagesCount,
+    0
+  );
+
+  const clearSelectedImages = () => {
+    imagePreviews.forEach((preview) => {
+      URL.revokeObjectURL(preview);
+    });
+
+    setImageFiles([]);
+    setImagePreviews([]);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
 
   useEffect(() => {
     if (!initialData) {
@@ -149,26 +213,40 @@ export default function MissionExperienceForm({
 
     setForm({
       name: initialData.name ?? "",
-      short_description: initialData.short_description ?? "",
+      short_description:
+        initialData.short_description ?? "",
       release_date: initialData.release_date ?? "",
-      number_seats: String(initialData.number_seats ?? ""),
-      seats_used: String(initialData.seats_used ?? "0"),
+      number_seats: String(
+        initialData.number_seats ?? ""
+      ),
+      seats_used: String(
+        initialData.seats_used ?? "0"
+      ),
       days: String(initialData.days ?? ""),
       nights: String(initialData.nights ?? ""),
       raiting: String(initialData.raiting ?? ""),
+      difficulty:
+        initialData.difficulty ?? "basic",
       subtitle: initialData.subtitle ?? "",
-      long_description: initialData.long_description ?? "",
-      investment: String(initialData.investment ?? ""),
+      long_description:
+        initialData.long_description ?? "",
+      investment: String(
+        initialData.investment ?? ""
+      ),
     });
 
     setFeatures(
-      initialData.features && initialData.features.length > 0
-        ? initialData.features.map((item) => item.feature)
+      initialData.features &&
+        initialData.features.length > 0
+        ? initialData.features.map(
+            (item) => item.feature
+          )
         : [""]
     );
 
     setItineraries(
-      initialData.itineraries && initialData.itineraries.length > 0
+      initialData.itineraries &&
+        initialData.itineraries.length > 0
         ? initialData.itineraries.map((item) => ({
             day: String(item.day ?? ""),
             order: String(item.order ?? ""),
@@ -191,7 +269,9 @@ export default function MissionExperienceForm({
 
   useEffect(() => {
     return () => {
-      imagePreviews.forEach((preview) => URL.revokeObjectURL(preview));
+      imagePreviews.forEach((preview) => {
+        URL.revokeObjectURL(preview);
+      });
     };
   }, [imagePreviews]);
 
@@ -199,31 +279,44 @@ export default function MissionExperienceForm({
     field: keyof MissionExperienceFormState,
     value: string
   ) => {
-    setForm((prev) => ({
-      ...prev,
+    setForm((previousForm) => ({
+      ...previousForm,
       [field]: value,
     }));
   };
 
-  const handleFeatureChange = (index: number, value: string) => {
-    setFeatures((prev) =>
-      prev.map((feature, featureIndex) =>
-        featureIndex === index ? value : feature
+  const handleFeatureChange = (
+    index: number,
+    value: string
+  ) => {
+    setFeatures((previousFeatures) =>
+      previousFeatures.map(
+        (feature, featureIndex) =>
+          featureIndex === index
+            ? value
+            : feature
       )
     );
   };
 
   const handleAddFeature = () => {
-    setFeatures((prev) => [...prev, ""]);
+    setFeatures((previousFeatures) => [
+      ...previousFeatures,
+      "",
+    ]);
   };
 
   const handleRemoveFeature = (index: number) => {
-    setFeatures((prev) => {
-      const nextFeatures = prev.filter(
-        (_, featureIndex) => featureIndex !== index
-      );
+    setFeatures((previousFeatures) => {
+      const nextFeatures =
+        previousFeatures.filter(
+          (_, featureIndex) =>
+            featureIndex !== index
+        );
 
-      return nextFeatures.length > 0 ? nextFeatures : [""];
+      return nextFeatures.length > 0
+        ? nextFeatures
+        : [""];
     });
   };
 
@@ -232,35 +325,44 @@ export default function MissionExperienceForm({
     field: keyof ItineraryFormState,
     value: string
   ) => {
-    setItineraries((prev) =>
-      prev.map((itinerary, itineraryIndex) =>
-        itineraryIndex === index
-          ? {
-              ...itinerary,
-              [field]: value,
-            }
-          : itinerary
+    setItineraries((previousItineraries) =>
+      previousItineraries.map(
+        (itinerary, itineraryIndex) =>
+          itineraryIndex === index
+            ? {
+                ...itinerary,
+                [field]: value,
+              }
+            : itinerary
       )
     );
   };
 
   const handleAddItinerary = () => {
-    setItineraries((prev) => [
-      ...prev,
+    setItineraries((previousItineraries) => [
+      ...previousItineraries,
       {
-        day: String(prev.length + 1),
-        order: String(prev.length + 1),
+        day: String(
+          previousItineraries.length + 1
+        ),
+        order: String(
+          previousItineraries.length + 1
+        ),
         title: "",
         description: "",
       },
     ]);
   };
 
-  const handleRemoveItinerary = (index: number) => {
-    setItineraries((prev) => {
-      const nextItineraries = prev.filter(
-        (_, itineraryIndex) => itineraryIndex !== index
-      );
+  const handleRemoveItinerary = (
+    index: number
+  ) => {
+    setItineraries((previousItineraries) => {
+      const nextItineraries =
+        previousItineraries.filter(
+          (_, itineraryIndex) =>
+            itineraryIndex !== index
+        );
 
       return nextItineraries.length > 0
         ? nextItineraries
@@ -268,10 +370,16 @@ export default function MissionExperienceForm({
     });
   };
 
-  const handleImagesChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFiles = Array.from(event.target.files ?? []);
+  const handleImagesChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const selectedFiles = Array.from(
+      event.target.files ?? []
+    );
 
-    if (selectedFiles.length === 0) return;
+    if (selectedFiles.length === 0) {
+      return;
+    }
 
     if (availableImageSlots <= 0) {
       alert(
@@ -285,55 +393,72 @@ export default function MissionExperienceForm({
       return;
     }
 
-    const filesToAdd = selectedFiles.slice(0, availableImageSlots);
+    const filesToAdd = selectedFiles.slice(
+      0,
+      availableImageSlots
+    );
 
-    if (selectedFiles.length > availableImageSlots) {
-      alert(`Solo puedes agregar ${availableImageSlots} imagen(es) más.`);
+    if (
+      selectedFiles.length >
+      availableImageSlots
+    ) {
+      alert(
+        `Solo puedes agregar ${availableImageSlots} imagen(es) más.`
+      );
     }
 
-    const newPreviews = filesToAdd.map((file) => URL.createObjectURL(file));
+    const newPreviews = filesToAdd.map(
+      (file) => URL.createObjectURL(file)
+    );
 
-    setImageFiles((prev) => [...prev, ...filesToAdd]);
-    setImagePreviews((prev) => [...prev, ...newPreviews]);
+    setImageFiles((previousFiles) => [
+      ...previousFiles,
+      ...filesToAdd,
+    ]);
+
+    setImagePreviews((previousPreviews) => [
+      ...previousPreviews,
+      ...newPreviews,
+    ]);
 
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
 
-  const handleRemoveSelectedImage = (index: number) => {
-    setImagePreviews((prev) => {
-      const previewToRemove = prev[index];
+  const handleRemoveSelectedImage = (
+    index: number
+  ) => {
+    setImagePreviews((previousPreviews) => {
+      const previewToRemove =
+        previousPreviews[index];
 
       if (previewToRemove) {
         URL.revokeObjectURL(previewToRemove);
       }
 
-      return prev.filter((_, previewIndex) => previewIndex !== index);
+      return previousPreviews.filter(
+        (_, previewIndex) =>
+          previewIndex !== index
+      );
     });
 
-    setImageFiles((prev) =>
-      prev.filter((_, fileIndex) => fileIndex !== index)
+    setImageFiles((previousFiles) =>
+      previousFiles.filter(
+        (_, fileIndex) => fileIndex !== index
+      )
     );
-  };
-
-  const clearSelectedImages = () => {
-    imagePreviews.forEach((preview) => URL.revokeObjectURL(preview));
-
-    setImageFiles([]);
-    setImagePreviews([]);
-
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
   };
 
   const handleDocumentChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    const selectedFile = event.target.files?.[0] ?? null;
+    const selectedFile =
+      event.target.files?.[0] ?? null;
 
-    if (!selectedFile) return;
+    if (!selectedFile) {
+      return;
+    }
 
     setDocumentFile(selectedFile);
   };
@@ -346,34 +471,47 @@ export default function MissionExperienceForm({
     }
   };
 
-  const handleDeleteCurrentImage = async (imageUuid: string) => {
-    if (!onDeleteCurrentImage) return;
+  const handleDeleteCurrentImage = async (
+    imageUuid: string
+  ) => {
+    if (!onDeleteCurrentImage) {
+      return;
+    }
 
     await onDeleteCurrentImage(imageUuid);
   };
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (
+    event: FormEvent<HTMLFormElement>
+  ) => {
     event.preventDefault();
-
-     console.log("documentFile en submit:", documentFile);
 
     await onSubmit({
       ...form,
       file_url: documentFile,
       images: imageFiles.slice(0, MAX_IMAGES),
-      features: features.map((feature) => feature.trim()).filter(Boolean),
+      features: features
+        .map((feature) => feature.trim())
+        .filter(Boolean),
       itineraries: itineraries
         .map((itinerary) => ({
           ...itinerary,
           title: itinerary.title.trim(),
-          description: itinerary.description.trim(),
+          description:
+            itinerary.description.trim(),
         }))
-        .filter((itinerary) => itinerary.day && itinerary.title),
+        .filter(
+          (itinerary) =>
+            itinerary.day && itinerary.title
+        ),
     });
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-6"
+    >
       <MissionExperienceInfoSection
         form={form}
         fields={experienceFields}
@@ -406,20 +544,35 @@ export default function MissionExperienceForm({
         currentImages={currentImages}
         imagePreviews={imagePreviews}
         imageFiles={imageFiles}
-        availableImageSlots={availableImageSlots}
+        availableImageSlots={
+          availableImageSlots
+        }
         maxImages={MAX_IMAGES}
         fileInputRef={fileInputRef}
         loading={loading}
-        imageDeletingUuid={imageDeletingUuid}
-        canDeleteCurrentImage={Boolean(onDeleteCurrentImage)}
+        imageDeletingUuid={
+          imageDeletingUuid
+        }
+        canDeleteCurrentImage={Boolean(
+          onDeleteCurrentImage
+        )}
         onImagesChange={handleImagesChange}
-        onRemoveSelectedImage={handleRemoveSelectedImage}
-        onClearSelectedImages={clearSelectedImages}
-        onDeleteCurrentImage={handleDeleteCurrentImage}
+        onRemoveSelectedImage={
+          handleRemoveSelectedImage
+        }
+        onClearSelectedImages={
+          clearSelectedImages
+        }
+        onDeleteCurrentImage={
+          handleDeleteCurrentImage
+        }
       />
 
       <div className="flex justify-end gap-3">
-        <Button type="submit" disabled={loading}>
+        <Button
+          type="submit"
+          disabled={loading}
+        >
           {loading
             ? "Guardando..."
             : initialData

@@ -4,13 +4,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Switch } from "antd";
 import Image from "next/image";
 
 import Badge from "@/shared/components/ui/badge/Badge";
 import DataTable, {
   DataTableColumn,
 } from "@/shared/components/table/DataTable";
+
+import Switch from "@/shared/components/form/switch/Switch";
 
 import type { Person, PersonLanguage } from "../types";
 
@@ -21,7 +22,11 @@ interface Props {
   onView?: (person: Person) => void;
   onEdit?: (person: Person) => void;
   onDelete?: (person: Person) => void;
-  onToggleState?: (person: Person, state: boolean) => Promise<void> | void;
+
+  onToggleState?: (
+    person: Person,
+    state: boolean
+  ) => Promise<void> | void;
 
   showView?: boolean;
   showEdit?: boolean;
@@ -41,11 +46,14 @@ export default function PersonTable({
 }: Props) {
   const router = useRouter();
 
-  const [updatingPersonUuid, setUpdatingPersonUuid] = useState<string | null>(
-    null
-  );
+  const [updatingPersonUuid, setUpdatingPersonUuid] = useState<
+    string | null
+  >(null);
 
-  const handleToggleState = async (person: Person, state: boolean) => {
+  const handleToggleState = async (
+    person: Person,
+    state: boolean
+  ) => {
     if (!onToggleState) return;
 
     try {
@@ -127,126 +135,131 @@ export default function PersonTable({
         </span>
       ),
     },
-    {
-      key: "missions",
-      header: "Misiones",
-      render: (person) => {
-        const missions = getPersonMissions(person);
+    // {
+    //   key: "missions",
+    //   header: "Misiones",
+    //   render: (person) => {
+    //     const missions = getPersonMissions(person);
 
-        if (missions.length === 0) {
-          return (
-            <Badge size="sm" color="light">
-              Sin misiones
-            </Badge>
-          );
-        }
+    //     if (missions.length === 0) {
+    //       return (
+    //         <Badge size="sm" color="light">
+    //           Sin misiones
+    //         </Badge>
+    //       );
+    //     }
 
-        return (
-          <div className="flex flex-wrap gap-2">
-            {missions.slice(0, 2).map((mission, index) => (
-              <Badge key={`${mission.uuid}-${index}`} size="sm" color="info">
-                {mission.name || "Misión"}
-              </Badge>
-            ))}
+    //     return (
+    //       <div className="flex flex-wrap gap-2">
+    //         {missions.slice(0, 2).map((mission, index) => (
+    //           <Badge
+    //             key={`${mission.uuid}-${index}`}
+    //             size="sm"
+    //             color="info"
+    //           >
+    //             {mission.name || "Misión"}
+    //           </Badge>
+    //         ))}
 
-            {missions.length > 2 && (
-              <Badge size="sm" color="light">
-                +{missions.length - 2}
-              </Badge>
-            )}
-          </div>
-        );
-      },
-    },
-    {
-      key: "roles",
-      header: "Rol",
-      render: (person) => {
-        const missions = getPersonMissions(person);
-        const roles = missions
-          .map((mission) => mission.role)
-          .filter(Boolean) as string[];
+    //         {missions.length > 2 && (
+    //           <Badge size="sm" color="light">
+    //             +{missions.length - 2}
+    //           </Badge>
+    //         )}
+    //       </div>
+    //     );
+    //   },
+    // },
+    // {
+    //   key: "roles",
+    //   header: "Rol",
+    //   render: (person) => {
+    //     const missions = getPersonMissions(person);
 
-        if (roles.length === 0) {
-          return (
-            <Badge size="sm" color="light">
-              Sin rol
-            </Badge>
-          );
-        }
+    //     const roles = missions
+    //       .map((mission) => mission.role)
+    //       .filter(Boolean) as string[];
 
-        return (
-          <div className="flex flex-wrap gap-2">
-            {roles.slice(0, 2).map((role, index) => (
-              <Badge key={`${role}-${index}`} size="sm" color="success">
-                {getRoleLabel(role)}
-              </Badge>
-            ))}
+    //     if (roles.length === 0) {
+    //       return (
+    //         <Badge size="sm" color="light">
+    //           Sin rol
+    //         </Badge>
+    //       );
+    //     }
 
-            {roles.length > 2 && (
-              <Badge size="sm" color="light">
-                +{roles.length - 2}
-              </Badge>
-            )}
-          </div>
-        );
-      },
-    },
-    {
-      key: "languages",
-      header: "Idiomas",
-      render: (person) => {
-        const languages = person.languages ?? [];
+    //     return (
+    //       <div className="flex flex-wrap gap-2">
+    //         {roles.slice(0, 2).map((role, index) => (
+    //           <Badge
+    //             key={`${role}-${index}`}
+    //             size="sm"
+    //             color="success"
+    //           >
+    //             {getRoleLabel(role)}
+    //           </Badge>
+    //         ))}
 
-        if (languages.length === 0) {
-          return (
-            <Badge size="sm" color="light">
-              Sin idiomas
-            </Badge>
-          );
-        }
+    //         {roles.length > 2 && (
+    //           <Badge size="sm" color="light">
+    //             +{roles.length - 2}
+    //           </Badge>
+    //         )}
+    //       </div>
+    //     );
+    //   },
+    // },
+    // {
+    //   key: "languages",
+    //   header: "Idiomas",
+    //   render: (person) => {
+    //     const languages = person.languages ?? [];
 
-        return (
-          <div className="flex flex-wrap gap-2">
-            {languages.slice(0, 2).map((language, index) => (
-              <Badge
-                key={`${getLanguageKey(language)}-${index}`}
-                size="sm"
-                color="warning"
-              >
-                {getLanguageLabel(language)}
-              </Badge>
-            ))}
+    //     if (languages.length === 0) {
+    //       return (
+    //         <Badge size="sm" color="light">
+    //           Sin idiomas
+    //         </Badge>
+    //       );
+    //     }
 
-            {languages.length > 2 && (
-              <Badge size="sm" color="light">
-                +{languages.length - 2}
-              </Badge>
-            )}
-          </div>
-        );
-      },
-    },
+    //     return (
+    //       <div className="flex flex-wrap gap-2">
+    //         {languages.slice(0, 2).map((language, index) => (
+    //           <Badge
+    //             key={`${getLanguageKey(language)}-${index}`}
+    //             size="sm"
+    //             color="warning"
+    //           >
+    //             {getLanguageLabel(language)}
+    //           </Badge>
+    //         ))}
+
+    //         {languages.length > 2 && (
+    //           <Badge size="sm" color="light">
+    //             +{languages.length - 2}
+    //           </Badge>
+    //         )}
+    //       </div>
+    //     );
+    //   },
+    // },
     {
       key: "active",
-      header: "Habilitado",
+      header: "Estado",
       render: (person) => {
-        const isActive =
-          person.active !== undefined
-            ? Boolean(Number(person.active))
-            : Boolean(Number(person.state));
+        const isActive = Boolean(person.active);
 
         return (
-          <Switch
-            checked={isActive}
-            loading={updatingPersonUuid === person.uuid}
-            disabled={
-              !onToggleState ||
-              (updatingPersonUuid !== null &&
-                updatingPersonUuid !== person.uuid)
-            }
-            onChange={(checked) => handleToggleState(person, checked)}
-          />
+          <div className="flex items-center gap-2">
+            <Switch
+              label=""
+              checked={isActive}
+              onChange={(checked: boolean) =>
+                handleToggleState(person, checked)
+              }
+            />
+          </div>
         );
       },
     },
@@ -316,38 +329,64 @@ function getPersonMissions(person: Person) {
 
   if (person.missions && person.missions.length > 0) {
     return person.missions.map((mission) => ({
-      uuid: mission.mission_uuid || mission.mission?.uuid || mission.uuid,
-      name: mission.name || mission.label || mission.mission?.name || "Misión",
-      role: mission.role || mission.pivot?.role || "",
+      uuid:
+        mission.mission_uuid ||
+        mission.mission?.uuid ||
+        mission.uuid,
+
+      name:
+        mission.name ||
+        mission.label ||
+        mission.mission?.name ||
+        "Misión",
+
+      role:
+        mission.role ||
+        mission.pivot?.role ||
+        "",
     }));
   }
 
   return [];
 }
 
-function getLanguageLabel(language: string | PersonLanguage) {
+function getLanguageLabel(
+  language: string | PersonLanguage
+) {
   if (typeof language === "string") {
     return language;
   }
 
-  return language.name || language.label || language.code || language.uuid;
+  return (
+    language.name ||
+    language.label ||
+    language.code ||
+    language.uuid
+  );
 }
 
-function getLanguageKey(language: string | PersonLanguage) {
+function getLanguageKey(
+  language: string | PersonLanguage
+) {
   if (typeof language === "string") {
     return language;
   }
 
-  return language.uuid || language.code || language.name || "language";
+  return (
+    language.uuid ||
+    language.code ||
+    language.name ||
+    "language"
+  );
 }
 
 function getRoleLabel(role: string) {
   const normalizedRole = role.toLowerCase();
 
   const labels: Record<string, string> = {
-    influencer: "Influencers",
-    coordinador: "Coordinadores",
-    colaborador: "Colaboradores",
+    influencer: "Influencer",
+    coordinator: "Coordinador",
+    contributor: "Colaborador",
   };
 
   return labels[normalizedRole] || role;

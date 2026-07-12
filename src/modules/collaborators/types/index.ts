@@ -1,8 +1,13 @@
 // src/modules/people/types/index.ts
 
+export type PersonMissionRole =
+  | "influencer"
+  | "coordinator"
+  | "contributor";
+
 export type PersonMissionPayload = {
   mission_uuid: string;
-  role: string;
+  role: PersonMissionRole;
 };
 
 export type PersonPayload = {
@@ -15,14 +20,7 @@ export type PersonPayload = {
   experience: string;
   specialty: string;
   bio: string;
-
   images?: File[];
-
-  /**
-   * Aquí van los UUID de los idiomas seleccionados.
-   * Ejemplo:
-   * languages: ["7b8801b5-0664-4f3e-9e8e-9bd87367bd63"]
-   */
   languages?: string[];
 };
 
@@ -65,7 +63,7 @@ export type PersonMission = {
   mission_uuid?: string;
   name?: string;
   label?: string;
-  role?: string;
+  role?: PersonMissionRole;
 
   mission?: {
     uuid?: string;
@@ -77,7 +75,7 @@ export type PersonMission = {
 
   pivot?: {
     mission_uuid?: string;
-    role?: string;
+    role?: PersonMissionRole;
   };
 };
 
@@ -85,7 +83,7 @@ export type PersonMissionPeople = {
   id?: number;
   mission_id?: number;
   person_id?: number;
-  role?: string;
+  role?: PersonMissionRole;
 
   mission?: {
     uuid?: string;
@@ -103,7 +101,7 @@ export type Person = {
 
   /**
    * En algunas respuestas puede venir como full_name
-   * y en tu endpoint por UUID viene como fullname.
+   * y en el endpoint por UUID puede venir como fullname.
    */
   full_name?: string;
   fullname?: string;
@@ -114,7 +112,7 @@ export type Person = {
   photo_perfil_url?: string | null;
 
   /**
-   * Tu endpoint /admin/people/{personUuid} devuelve photo_url.
+   * El endpoint /admin/people/{personUuid} puede devolver photo_url.
    */
   photo_url?: string | null;
 
@@ -130,7 +128,7 @@ export type Person = {
   missions?: PersonMission[];
 
   /**
-   * Tu endpoint /admin/people/{personUuid} devuelve mission_people.
+   * El endpoint /admin/people/{personUuid} puede devolver mission_people.
    */
   mission_people?: PersonMissionPeople[];
 
@@ -163,6 +161,7 @@ export type PeopleResponse = {
         per_page?: number;
         total?: number;
       };
+
   meta?: {
     current_page: number;
     last_page: number;
@@ -197,6 +196,7 @@ export type GetLanguagesParams = {
 export type LanguagesResponse = {
   success: boolean;
   message: string;
+
   data: {
     current_page: number;
     data: Language[];
@@ -204,12 +204,14 @@ export type LanguagesResponse = {
     from?: number;
     last_page: number;
     last_page_url?: string;
+
     links?: Array<{
       url: string | null;
       label: string;
       page: number | null;
       active: boolean;
     }>;
+
     next_page_url?: string | null;
     path?: string;
     per_page: number;
@@ -217,4 +219,28 @@ export type LanguagesResponse = {
     to?: number;
     total: number;
   };
+};
+
+/**
+ * Payload enviado a:
+ * PUT /api/v1/admin/people/{personUuid}/state
+ */
+export type UpdatePersonStatePayload = {
+  state: boolean;
+};
+
+/**
+ * Respuesta del endpoint de cambio de estado.
+ *
+ * Ejemplo:
+ * {
+ *   success: true,
+ *   message: "Persona actualizada correctamente.",
+ *   data: false
+ * }
+ */
+export type UpdatePersonStateResponse = {
+  success: boolean;
+  message: string;
+  data: boolean;
 };

@@ -9,10 +9,11 @@ import { Spin } from "antd";
 import TableToolbar from "@/shared/components/table/TableToolbar";
 import TablePagination from "@/shared/components/table/TablePagination";
 import ConfirmModal from "@/shared/components/ui/modal/ConfirmModal";
-import { Person } from "@/modules/collaborators/types";
+
+import type { Person } from "@/modules/collaborators/types";
+
 import PersonTable from "@/modules/collaborators/components/PersonTable";
 import { usePersonStore } from "@/modules/collaborators/store/usePersonStore";
-
 
 function TableAntLoading() {
   return (
@@ -43,7 +44,8 @@ export default function PeoplePage() {
   } = usePersonStore();
 
   const [search, setSearch] = useState("");
-  const [personToDelete, setPersonToDelete] = useState<Person | null>(null);
+  const [personToDelete, setPersonToDelete] =
+    useState<Person | null>(null);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -77,7 +79,9 @@ export default function PeoplePage() {
     });
   };
 
-  const handlePerPageChange = (newPerPage: number) => {
+  const handlePerPageChange = (
+    newPerPage: number
+  ) => {
     fetchPeople({
       page: 1,
       perPage: newPerPage,
@@ -86,15 +90,21 @@ export default function PeoplePage() {
   };
 
   const handleView = (person: Person) => {
-    router.push(`/collaborators/${person.uuid}`);
+    router.push(
+      `/collaborators/${person.uuid}`
+    );
   };
 
   const handleOpenCreate = () => {
     router.push("/collaborators/create");
   };
 
-  const handleOpenEdit = (person: Person) => {
-    router.push(`/collaborators/${person.uuid}/edit`);
+  const handleOpenEdit = (
+    person: Person
+  ) => {
+    router.push(
+      `/collaborators/${person.uuid}/edit`
+    );
   };
 
   const handleDelete = (person: Person) => {
@@ -105,7 +115,9 @@ export default function PeoplePage() {
     if (!personToDelete) return;
 
     try {
-      await deletePerson(personToDelete.uuid);
+      await deletePerson(
+        personToDelete.uuid
+      );
 
       setPersonToDelete(null);
 
@@ -125,22 +137,24 @@ export default function PeoplePage() {
     setPersonToDelete(null);
   };
 
-  const handleToggleState = async (person: Person, state: boolean) => {
+  const handleToggleState = async (
+    person: Person,
+    state: boolean
+  ) => {
     try {
-      await togglePersonState(person.uuid, state);
-
-      await fetchPeople({
-        page: currentPage,
-        perPage,
-        search: search.trim(),
-      });
+      await togglePersonState(
+        person.uuid,
+        state
+      );
     } catch {
       // El error ya se maneja en el store.
+      // Si falla, el store restaura el estado anterior.
     }
   };
 
   const personToDeleteName =
     personToDelete?.full_name ||
+    personToDelete?.fullname ||
     `${personToDelete?.first_name ?? ""} ${
       personToDelete?.last_name ?? ""
     }`.trim();
@@ -167,7 +181,9 @@ export default function PeoplePage() {
           onView={handleView}
           onEdit={handleOpenEdit}
           onDelete={handleDelete}
-          onToggleState={handleToggleState}
+          onToggleState={
+            handleToggleState
+          }
           showView
           showEdit
           showDelete
@@ -178,13 +194,24 @@ export default function PeoplePage() {
         currentPage={currentPage}
         totalPages={totalPages}
         perPage={perPage}
-        perPageOptions={[10, 25, 50, 100]}
-        onPageChange={handlePageChange}
-        onPerPageChange={handlePerPageChange}
+        perPageOptions={[
+          10,
+          25,
+          50,
+          100,
+        ]}
+        onPageChange={
+          handlePageChange
+        }
+        onPerPageChange={
+          handlePerPageChange
+        }
       />
 
       <ConfirmModal
-        open={Boolean(personToDelete)}
+        open={Boolean(
+          personToDelete
+        )}
         title="Eliminar persona"
         message={`¿Seguro que deseas eliminar la persona "${
           personToDeleteName || ""
@@ -192,8 +219,12 @@ export default function PeoplePage() {
         confirmText="Eliminar"
         cancelText="Cancelar"
         loading={loading}
-        onConfirm={handleConfirmDelete}
-        onCancel={handleCancelDelete}
+        onConfirm={
+          handleConfirmDelete
+        }
+        onCancel={
+          handleCancelDelete
+        }
       />
     </div>
   );

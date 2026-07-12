@@ -2,12 +2,19 @@
 
 "use client";
 
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import {
+  FormEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import type {
   Language,
   Person,
   PersonMissionPayload,
+  PersonMissionRole,
   PersonPayload,
 } from "../../types";
 
@@ -36,6 +43,15 @@ interface Props {
   onDeleteImage?: (imageUuid: string) => Promise<void> | void;
 }
 
+/**
+ * En el formulario permitimos role vacío para poder
+ * mostrar el placeholder del selector.
+ */
+export type PersonMissionFormState = {
+  mission_uuid: string;
+  role: PersonMissionRole | "";
+};
+
 export type PersonFormState = {
   first_name: string;
   last_name: string;
@@ -43,7 +59,12 @@ export type PersonFormState = {
   specialty: string;
   bio: string;
   languages: string[];
-  missions: PersonMissionPayload[];
+  missions: PersonMissionFormState[];
+};
+
+const emptyMission: PersonMissionFormState = {
+  mission_uuid: "",
+  role: "",
 };
 
 const initialState: PersonFormState = {
@@ -53,12 +74,7 @@ const initialState: PersonFormState = {
   specialty: "",
   bio: "",
   languages: [],
-  missions: [
-    {
-      mission_uuid: "",
-      role: "",
-    },
-  ],
+  missions: [{ ...emptyMission }],
 };
 
 export default function PersonForm({
@@ -88,11 +104,17 @@ export default function PersonForm({
 
   useEffect(() => {
     if (!initialData) {
-      setForm(initialState);
+      setForm({
+        ...initialState,
+        missions: [{ ...emptyMission }],
+      });
+
       clearSelectedPhoto();
       clearSelectedImages();
       return;
     }
+
+    const initialMissions = getInitialMissions(initialData);
 
     setForm({
       first_name: initialData.first_name ?? "",
@@ -101,7 +123,15 @@ export default function PersonForm({
       specialty: initialData.specialty ?? "",
       bio: initialData.bio ?? "",
       languages: getInitialLanguageUuids(initialData),
-      missions: getInitialMissions(initialData),
+      missions:
+        initialMissions.length > 0
+          ? initialMissions.map((mission) => ({
+              mission_uuid: mission.mission_uuid ?? "",
+              role: isPersonMissionRole(mission.role)
+                ? mission.role
+                : "",
+            }))
+          : [{ ...emptyMission }],
     });
 
     clearSelectedPhoto();
@@ -141,32 +171,35 @@ export default function PersonForm({
 
   const handleMissionChange = (
     index: number,
-    field: keyof PersonMissionPayload,
+    field: keyof PersonMissionFormState,
     value: string
   ) => {
     setForm((prev) => ({
       ...prev,
-      missions: prev.missions.map((mission, missionIndex) =>
-        missionIndex === index
-          ? {
-              ...mission,
-              [field]: value,
-            }
-          : mission
-      ),
+      missions: prev.missions.map((mission, missionIndex) => {
+        if (missionIndex !== index) {
+          return mission;
+        }
+
+        if (field === "role") {
+          return {
+            ...mission,
+            role: isPersonMissionRole(value) ? value : "",
+          };
+        }
+
+        return {
+          ...mission,
+          mission_uuid: value,
+        };
+      }),
     }));
   };
 
   const handleAddMission = () => {
     setForm((prev) => ({
       ...prev,
-      missions: [
-        ...prev.missions,
-        {
-          mission_uuid: "",
-          role: "",
-        },
-      ],
+      missions: [...prev.missions, { ...emptyMission }],
     }));
   };
 
@@ -181,17 +214,14 @@ export default function PersonForm({
         missions:
           nextMissions.length > 0
             ? nextMissions
-            : [
-                {
-                  mission_uuid: "",
-                  role: "",
-                },
-              ],
+            : [{ ...emptyMission }],
       };
     });
   };
 
-  const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0] ?? null;
 
     if (!file) return;
@@ -204,7 +234,9 @@ export default function PersonForm({
     setPhotoPreview(URL.createObjectURL(file));
   };
 
-  const handleImagesChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImagesChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const files = Array.from(event.target.files ?? []);
 
     if (files.length === 0) return;
@@ -214,7 +246,9 @@ export default function PersonForm({
     });
 
     setImageFiles(files);
-    setImagePreviews(files.map((file) => URL.createObjectURL(file)));
+    setImagePreviews(
+      files.map((file) => URL.createObjectURL(file))
+    );
   };
 
   const handleRemoveSelectedPhoto = () => {
@@ -251,19 +285,28 @@ export default function PersonForm({
     }
   }
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (
+    event: FormEvent<HTMLFormElement>
+  ) => {
     event.preventDefault();
 
-    const validMissions = form.missions.filter(
-      (mission) => mission.mission_uuid && mission.role
-    );
+    const validMissions: PersonMissionPayload[] = form.missions
+      .filter(
+        (mission) =>
+          Boolean(mission.mission_uuid) &&
+          isPersonMissionRole(mission.role)
+      )
+      .map((mission) => ({
+        mission_uuid: mission.mission_uuid,
+        role: mission.role as PersonMissionRole,
+      }));
 
     await onSubmit({
-      first_name: form.first_name,
-      last_name: form.last_name,
-      experience: form.experience,
-      specialty: form.specialty,
-      bio: form.bio,
+      first_name: form.first_name.trim(),
+      last_name: form.last_name.trim(),
+      experience: form.experience.trim(),
+      specialty: form.specialty.trim(),
+      bio: form.bio.trim(),
       missions: validMissions,
       languages: form.languages,
       photo_perfil: photoFile,
@@ -275,7 +318,10 @@ export default function PersonForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <PersonInfoSection form={form} onChange={handleChange} />
+      <PersonInfoSection
+        form={form}
+        onChange={handleChange}
+      />
 
       <PersonMissionsSection
         formMissions={form.missions}
@@ -325,5 +371,15 @@ export default function PersonForm({
         </button>
       </div>
     </form>
+  );
+}
+
+function isPersonMissionRole(
+  value: unknown
+): value is PersonMissionRole {
+  return (
+    value === "influencer" ||
+    value === "coordinator" ||
+    value === "contributor"
   );
 }

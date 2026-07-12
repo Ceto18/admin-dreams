@@ -3,19 +3,28 @@
 "use client";
 
 import Label from "@/shared/components/form/Label";
+
 import type { Mission } from "@/modules/missions/types";
-import type { PersonMissionPayload } from "../../types";
+import type { PersonMissionRole } from "../../types";
+
 import { ROLE_OPTIONS } from "./personFormUtils";
 
+export type PersonMissionFormState = {
+  mission_uuid: string;
+  role: PersonMissionRole | "";
+};
+
 type Props = {
-  formMissions: PersonMissionPayload[];
+  formMissions: PersonMissionFormState[];
   missions: Mission[];
   loadingMissions?: boolean;
+
   onAddMission: () => void;
   onRemoveMission: (index: number) => void;
+
   onMissionChange: (
     index: number,
-    field: keyof PersonMissionPayload,
+    field: keyof PersonMissionFormState,
     value: string
   ) => void;
 };
@@ -62,12 +71,16 @@ export default function PersonMissionsSection({
               <select
                 value={mission.mission_uuid}
                 onChange={(event) =>
-                  onMissionChange(index, "mission_uuid", event.target.value)
+                  onMissionChange(
+                    index,
+                    "mission_uuid",
+                    event.target.value
+                  )
                 }
                 disabled={loadingMissions}
                 className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm text-gray-700 outline-none focus:border-brand-500 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
               >
-                <option value="">
+                <option value="" disabled hidden>
                   {loadingMissions
                     ? "Cargando misiones..."
                     : "Selecciona una misión"}
@@ -91,7 +104,9 @@ export default function PersonMissionsSection({
                 }
                 className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
               >
-                <option value="">Selecciona un rol</option>
+                <option value="" disabled hidden>
+                  Selecciona un rol
+                </option>
 
                 {ROLE_OPTIONS.map((role) => (
                   <option key={role.value} value={role.value}>

@@ -17,7 +17,7 @@ interface SelectProps {
 
 const Select: React.FC<SelectProps> = ({
   options,
-  placeholder = "Select an option",
+  placeholder = "Selecciona una opción",
   onChange,
   className = "",
   defaultValue = "",
@@ -32,8 +32,10 @@ const Select: React.FC<SelectProps> = ({
     setSelectedValue(value ?? defaultValue);
   }, [value, defaultValue]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const nextValue = e.target.value;
+  const handleChange = (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const nextValue = event.target.value;
 
     setSelectedValue(nextValue);
     onChange(nextValue);
@@ -53,6 +55,7 @@ const Select: React.FC<SelectProps> = ({
       <option
         value=""
         disabled
+        hidden
         className="text-gray-700 dark:bg-gray-900 dark:text-gray-400"
       >
         {placeholder}
