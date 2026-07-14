@@ -9,32 +9,35 @@ import DataTable, {
   DataTableColumn,
 } from "@/shared/components/table/DataTable";
 
-import type { Review } from "../types";
+import type {
+  Review,
+  ReviewState,
+} from "../types";
 
 interface Props {
   data: Review[];
   loading?: boolean;
 
-  onView?: (review: Review) => void;
+  onEdit?: (review: Review) => void;
 
-  showView?: boolean;
+  showEdit?: boolean;
 }
 
 export default function ReviewTable({
   data,
   loading = false,
-  onView,
-  showView = true,
+  onEdit,
+  showEdit = true,
 }: Props) {
   const router = useRouter();
 
-  const handleView = (review: Review) => {
-    if (onView) {
-      onView(review);
+  const handleEdit = (review: Review) => {
+    if (onEdit) {
+      onEdit(review);
       return;
     }
 
-    router.push(`/reviews/${review.uuid}`);
+    router.push(`/reviews/${review.uuid}/edit`);
   };
 
   const columns: DataTableColumn<Review>[] = [
@@ -65,18 +68,13 @@ export default function ReviewTable({
       ),
     },
     {
-      key: "is_approved",
+      key: "state",
       header: "Estado",
-      render: (review) =>
-        review.is_approved ? (
-          <Badge size="sm" color="success">
-            Aprobada
-          </Badge>
-        ) : (
-          <Badge size="sm" color="warning">
-            Pendiente
-          </Badge>
-        ),
+      render: (review) => (
+        <ReviewStateBadge
+          state={getReviewState(review)}
+        />
+      ),
     },
   ];
 
@@ -87,10 +85,54 @@ export default function ReviewTable({
       loading={loading}
       emptyMessage="No hay reseñas registradas."
       getRowKey={(review) => review.uuid}
-      onView={handleView}
-      showView={showView}
-      showEdit={false}
+      onEdit={handleEdit}
+      showView={false}
+      showEdit={showEdit}
       showDelete={false}
     />
   );
+}
+
+interface ReviewStateBadgeProps {
+  state: ReviewState;
+}
+
+function ReviewStateBadge({
+  state,
+}: ReviewStateBadgeProps) {
+  switch (state) {
+    case "approved":
+      return (
+        <Badge size="sm" color="success">
+          Aprobada
+        </Badge>
+      );
+
+    case "denied":
+      return (
+        <Badge size="sm" color="error">
+          Denegada
+        </Badge>
+      );
+
+    case "pending":
+    default:
+      return (
+        <Badge size="sm" color="warning">
+          Pendiente
+        </Badge>
+      );
+  }
+}
+
+function getReviewState(
+  review: Review
+): ReviewState {
+  if (review.state) {
+    return review.state;
+  }
+
+  return review.is_approved
+    ? "approved"
+    : "pending";
 }

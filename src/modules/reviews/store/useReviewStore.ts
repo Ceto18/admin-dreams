@@ -6,8 +6,10 @@ import { reviewService } from "../services/reviewService";
 
 import type {
   Review,
+  UpdateReviewPayload,
 } from "../types";
 
+import { showSuccess } from "@/shared/utils/toast";
 import { handleApiError } from "@/shared/utils/handleApiError";
 
 type FetchReviewsParams = {
@@ -27,12 +29,23 @@ type ReviewStore = {
 
   loading: boolean;
   loadingDetail: boolean;
+  updating: boolean;
+  deletingVideo: boolean;
 
   fetchReviews: (
     params?: FetchReviewsParams
   ) => Promise<void>;
 
   fetchReview: (
+    reviewUuid: string
+  ) => Promise<void>;
+
+  updateReview: (
+    reviewUuid: string,
+    payload: UpdateReviewPayload
+  ) => Promise<Review>;
+
+  deleteReviewVideo: (
     reviewUuid: string
   ) => Promise<void>;
 
@@ -52,6 +65,8 @@ export const useReviewStore = create<ReviewStore>(
 
     loading: false,
     loadingDetail: false,
+    updating: false,
+    deletingVideo: false,
 
     fetchReviews: async (params = {}) => {
       try {
@@ -75,8 +90,7 @@ export const useReviewStore = create<ReviewStore>(
             search,
           });
 
-        const pagination =
-          response?.data;
+        const pagination = response?.data;
 
         set({
           reviews:
@@ -139,6 +153,125 @@ export const useReviewStore = create<ReviewStore>(
       } finally {
         set({
           loadingDetail: false,
+        });
+      }
+    },
+
+    updateReview: async (
+      reviewUuid,
+      payload
+    ) => {
+      try {
+        set({
+          updating: true,
+        });
+
+        const response =
+          await reviewService.updateReview(
+            reviewUuid,
+            payload
+          );
+
+        showSuccess(
+          response?.message ??
+            "Reseña actualizada correctamente."
+        );
+
+        const updatedReview =
+          response?.data;
+
+        if (!updatedReview) {
+          throw new Error(
+            "El servidor no devolvió la reseña actualizada."
+          );
+        }
+
+        set((store) => ({
+          selectedReview:
+            store.selectedReview?.uuid ===
+            reviewUuid
+              ? {
+                  ...store.selectedReview,
+                  ...updatedReview,
+                }
+              : store.selectedReview,
+
+          reviews: store.reviews.map(
+            (review) =>
+              review.uuid === reviewUuid
+                ? {
+                    ...review,
+                    ...updatedReview,
+                  }
+                : review
+          ),
+        }));
+
+        return updatedReview;
+      } catch (error) {
+        console.error(
+          "Error updateReview:",
+          error
+        );
+
+        handleApiError(error);
+        throw error;
+      } finally {
+        set({
+          updating: false,
+        });
+      }
+    },
+
+    deleteReviewVideo: async (
+      reviewUuid
+    ) => {
+      try {
+        set({
+          deletingVideo: true,
+        });
+
+        const response =
+          await reviewService.deleteReviewVideo(
+            reviewUuid
+          );
+
+        showSuccess(
+          response?.message ??
+            "Video eliminado correctamente."
+        );
+
+        set((store) => ({
+          selectedReview:
+            store.selectedReview?.uuid ===
+            reviewUuid
+              ? {
+                  ...store.selectedReview,
+                  video_url: null,
+                }
+              : store.selectedReview,
+
+          reviews: store.reviews.map(
+            (review) =>
+              review.uuid === reviewUuid
+                ? {
+                    ...review,
+                    video_url: null,
+                  }
+                : review
+          ),
+        }));
+      } catch (error) {
+        console.error(
+          "Error deleteReviewVideo:",
+          error
+        );
+
+        handleApiError(error);
+        throw error;
+      } finally {
+        set({
+          deletingVideo: false,
         });
       }
     },

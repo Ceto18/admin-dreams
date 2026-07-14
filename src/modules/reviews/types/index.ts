@@ -1,25 +1,43 @@
 // src/modules/reviews/types/index.ts
 
+export type ReviewState = "approved" | "pending" | "denied";
+
 export type Review = {
   uuid: string;
   name: string;
   rating: number;
+
+  /**
+   * Campo usado en el listado actual.
+   */
   is_approved: boolean;
 
   /**
-   * Estos campos vienen en el endpoint de detalle.
+   * Campos disponibles en el endpoint de detalle.
    */
   comment?: string | null;
   video_url?: string | null;
   moment_name?: string | null;
   experience_name?: string | null;
   mission_name?: string | null;
+
+  /**
+   * Puede venir en el detalle después de implementar
+   * los estados approved, pending y denied.
+   */
+  state?: ReviewState;
 };
 
 export type GetReviewsParams = {
   page?: number;
   per_page?: number;
   search?: string;
+};
+
+export type UpdateReviewPayload = {
+  comment: string;
+  rating: number;
+  state: ReviewState;
 };
 
 export type ReviewsPagination = {
@@ -53,4 +71,16 @@ export type ReviewResponse = {
   success: boolean;
   message: string;
   data: Review;
+};
+
+export type UpdateReviewResponse = {
+  success: boolean;
+  message: string;
+  data: Review;
+};
+
+export type DeleteReviewVideoResponse = {
+  success: boolean;
+  message: string;
+  data?: Review | null;
 };
