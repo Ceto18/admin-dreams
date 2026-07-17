@@ -10,10 +10,10 @@ import {
   GridIcon,
   HorizontaLDots,
   Building2Icon,
-  WalletIcon,
-  CreditCardIcon,
-  DiscountCodeIcon,
-  MembershipPlansIcon
+  MembershipPlansIcon,
+  ChatIcon,
+  GroupIcon,
+  HomeIcon
 } from "@/shared/icons/index";
 
 type NavItem = {
@@ -30,13 +30,13 @@ const navItems: NavItem[] = [
   //   subItems: [{ name: "Ecommerce", path: "/", pro: false }],
   // },
 
+  // {
+  //   icon: <GridIcon />,
+  //   name: "Resumen",
+  //   path: "/",
+  // },
   {
-    icon: <GridIcon />,
-    name: "Resumen",
-    path: "/",
-  },
-  {
-    icon: <Building2Icon />,
+    icon: <HomeIcon />,
     name: "Inicio",
     path: "/home",
   },
@@ -62,15 +62,42 @@ const navItems: NavItem[] = [
     ],
   },
   {
-    icon: <Building2Icon />,
+    icon: <GroupIcon />,
     name: "Colaboradores",
     path: "/collaborators",
   },
   {
-    icon: <WalletIcon />,
+    icon: <ChatIcon />,
     name: "Reseñas",
     path: "/reviews",
   },
+
+  {
+    icon: <Building2Icon />,
+    name: "Empresa",
+    subItems: [
+      {
+        name: "Información",
+        path: "/company",
+        pro: false,
+      },
+      {
+        name: "Historia",
+        path: "/company/timeline",
+        pro: false,
+      },
+      {
+        name: "Redes Sociales",
+        path: "/company/social-network-profiles",
+        pro: false,
+      }
+    ],
+  },
+  // {
+  //   icon: <CreditCardIcon />,
+  //   name: "Historia",
+  //   path: "/company",
+  // }
   // {
   //   icon: <CreditCardIcon />,
   //   name: "Planes",

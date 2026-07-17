@@ -57,6 +57,7 @@ import PlansIcon from "./notepad-text.svg";
 import CreditCardIcon from "./credit-card.svg";
 import DiscountCodeIcon from "./ticket-percent.svg";
 import MembershipPlansIcon from "./shield-check.svg"
+import HomeIcon from "./house.svg";
 
 export {
   DownloadIcon,
@@ -117,5 +118,6 @@ export {
   PlansIcon,
   CreditCardIcon,
   DiscountCodeIcon,
-  MembershipPlansIcon
+  MembershipPlansIcon,
+  HomeIcon
 };
