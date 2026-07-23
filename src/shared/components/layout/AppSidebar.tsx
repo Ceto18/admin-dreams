@@ -93,6 +93,12 @@ const navItems: NavItem[] = [
       }
     ],
   },
+
+  {
+    icon: <MembershipPlansIcon />,
+    name: "Reservas",
+    path: "/reservations",
+  }
   // {
   //   icon: <CreditCardIcon />,
   //   name: "Historia",
