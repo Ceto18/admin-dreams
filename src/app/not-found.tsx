@@ -11,8 +11,8 @@ export default function NotFound() {
       <div className="mx-auto w-full max-w-[242px] text-center sm:max-w-[472px]">
         <div className="mb-8 flex justify-center">
           <Image
-            src="/images/logo/qori-logo-200.png"
-            alt="Qori ID"
+            src="/images/logo/logo-d.png"
+            alt="Dreams Admin"
             width={150}
             height={40}
             priority
@@ -40,7 +40,7 @@ export default function NotFound() {
         />
 
         <p className="mb-6 mt-10 text-base text-gray-700 dark:text-gray-400 sm:text-lg">
-          La página que estás buscando no existe o fue movida dentro de Qori ID.
+          La página que estás buscando no existe o fue movida dentro de DreamsPlanetXP.
         </p>
 
         <Link
@@ -52,7 +52,7 @@ export default function NotFound() {
       </div>
 
       <p className="absolute bottom-6 left-1/2 -translate-x-1/2 text-center text-sm text-gray-500 dark:text-gray-400">
-        &copy; {new Date().getFullYear()} - Qori ID
+        &copy; {new Date().getFullYear()} - DreamsPlanetXP
       </p>
     </div>
   );

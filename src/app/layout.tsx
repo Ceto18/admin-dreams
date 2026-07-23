@@ -10,12 +10,12 @@ const outfit = Outfit({
 });
 
 export const metadata = {
-    title: "Qori Admin",
-    description: "Panel administrativo Qori",
+    title: "Dreams Admin",
+    description: "Panel administrativo DreamsPlanetXP",
     icons: {
-        icon: "/images/logo/qori-logo.png",
-        shortcut: "/images/logo/qori-logo.png",
-        apple: "/images/logo/qori-logo.png",
+        icon: "/images/logo/logo-d.png",
+        shortcut: "/images/logo/logo-d.png",
+        apple: "/images/logo/logo-d.png",
     },
 };
 

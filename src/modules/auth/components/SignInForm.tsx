@@ -64,7 +64,7 @@ export default function SignInForm() {
 
             showSuccess("Inicio de sesión correcto.");
 
-            router.replace("/");
+            router.replace("/home");
         } catch (error) {
             handleApiError(error);
         } finally {
@@ -134,7 +134,7 @@ export default function SignInForm() {
                                 </div>
                             </div>
 
-                            <div className="flex items-center justify-between">
+                            {/* <div className="flex items-center justify-between">
                                 <div />
 
                                 <Link
@@ -143,7 +143,7 @@ export default function SignInForm() {
                                 >
                                     ¿Olvidaste tu contraseña?
                                 </Link>
-                            </div>
+                            </div> */}
 
                             <div>
                                 <Button
@@ -158,7 +158,7 @@ export default function SignInForm() {
                         </div>
                     </form>
 
-                    <div className="mt-5">
+                    {/* <div className="mt-5">
                         <p className="text-center text-sm text-gray-700 dark:text-gray-400 sm:text-start">
                             ¿No tienes una cuenta?{" "}
                             <Link
@@ -168,7 +168,7 @@ export default function SignInForm() {
                                 Regístrate
                             </Link>
                         </p>
-                    </div>
+                    </div> */}
                 </div>
             </div>
         </div>

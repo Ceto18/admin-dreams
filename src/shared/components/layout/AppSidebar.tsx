@@ -13,7 +13,8 @@ import {
   MembershipPlansIcon,
   ChatIcon,
   GroupIcon,
-  HomeIcon
+  HomeIcon,
+  TableIcon
 } from "@/shared/icons/index";
 
 type NavItem = {
@@ -95,7 +96,7 @@ const navItems: NavItem[] = [
   },
 
   {
-    icon: <MembershipPlansIcon />,
+    icon: <TableIcon />,
     name: "Reservas",
     path: "/reservations",
   }
